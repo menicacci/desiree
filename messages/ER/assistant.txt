@@ -1,0 +1,2 @@
+<{<Average delay, Empirical>, <Layer (l), 1>}, Excecution delay with 1 Empirical resolution layer, 11.33>
+<{<Average delay, Empirical>, <Layer (l), 1>}, Excecution delay with 2 Empirical resolution layers, 18.12>

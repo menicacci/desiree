@@ -1,7 +1,6 @@
 private.json
 
-articles/
-answers/
-prompts/
+experiments/
+requests/
 
 .idea/

@@ -1,1 +1,0 @@
-Extract ALL the conditional claims (and nothing else, but write down all the conditional claims with the respective specifications, do not be lazy by writing just some of the claims) from this table:

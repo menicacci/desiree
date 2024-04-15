@@ -1,0 +1,1 @@
+Extract ALL the conditional claims and nothing else (do NOT be lazy by writing just some of the claims) from this table:

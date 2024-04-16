@@ -1,1 +1,2 @@
-Respond ONLY with the conditional claims, don't enumerate them in any way. You can NOT answer with something like "and so on".
+You have to consider ALL the table cells during the extraction, do NOT ignore any of them. If you are considering a cell, use ALL of its values (ALL the text inside its <td> tag), do NOT ignore any of them.
+Respond ONLY with the conditional claims, DO NOT enumerate them in any way. You have to extract ALL of them. You can NOT answer with something like "and so on".

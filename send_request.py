@@ -1,6 +1,6 @@
 import os
 import json
-from scripts import request_utils as ru
+from scripts import request as ru
 
 
 def build_messages(file_name: str, output_prompts_folder: str, instructions: str, request: str):
@@ -50,42 +50,32 @@ Write just the function.
 '''
 
 req = '''
-This is the general structure of the data that I want to extract:
+With this function I create a map:
 
-<{list of specifications}, m, o>. "m" is the measure and "o" is the associated result. 
-The list of specifications is a list of couples that follow this structure: <name, value>, where name is the type of specification and value is the value of the specification.
-Measure and outcome could not be present (like in some examples), in that case the structure will follow this format: <{list of specifications}>
+def count_specifications(table_claims):
+    specs_map = {}
 
-Examples (correct):
+    for claim in table_claims:
+        for spec in claim['specifications']:
+            spec_name = spec['name']
+            spec_value = spec['value']
 
-<{<Method, HM(40)>, <Dataset, D_{n4}>}, F1, 91.39>
-<{<Method, HM(40)>,<Dataset, D_{n4}>}, F1, 91.39>
-<{<Method, HM(40)>, <Dataset, D_{n5}>}, F1, 58.52>
-<{<Method, HM(40)>,<Dataset, D_{n5}>}, F1, 58.52>
-<{<Model, DNN + BranchyNet>, <Dataset, FSPS>, <Mechanism, With BranchyNet>}, F1(Macro), 0.55>
-<{<Model, DNN + BranchyNet>, <Dataset, FSPS>, <Mechanism, With BranchyNet>}, Accuracy, 89.6>
-<{<Dataset, Abt-Buy>, <Existing Dataset, Dt1>}>
-<{<Dataset, Abt-Buy>, <New Dataset, Dn1>}>
-<{<Method, Barhom etal. (2019)>, <Dataset, GVC (Events)>}, Precision, 66.0>
-<{<Method, Barhom etal. (2019)>, <Dataset, GVC (Events)>}, F1, 72.7>
+            if spec_name not in specs_map:
+                specs_map[spec_name] = {"count": 0, "values": {}}
 
-Examples (wrong):
-<{<Method, HM(40), <Dataset, D_{n4}>}, F1, 91.39>
-<{<Method, HM(40)>,<Dataset, D_{n5}>} F1, 58.52>
-<{<Dataset, Abt-Buy>, <Existing Dataset, Dt1>>
-<<Dataset, Abt-Buy>,<New Dataset, Dn1>}>
-<<Dataset, Abt-Buy>,<New Dataset, Dn1>}>
-{<Dataset, Abt-Buy>, <New Dataset, Dn1>}>
-{<Dataset, Abt-Buy>, <New Dataset, Dn1>}
+            specs_map[spec_name]["count"] += 1
 
+            spec_values = specs_map[spec_name]["values"]
+            if spec_value not in spec_values:
+                spec_values[spec_value] = 0
 
-Write a Python script that:
-(1) Check if the structure isn't wrong (there aren't errors)
-(2) Saves the data inside in Python (lists or dict, or ...)
+            spec_values[spec_value] += 1
 
-The function needs to return the correct data inside those structures, and a list of wrong structures
+    return specs_map
+
+Write a function to print it
 '''
 
-req_id = '0024'
+req_id = '0027'
 
 run(connection_infos, prompts_folder, answers_folder, instr, req, req_id)

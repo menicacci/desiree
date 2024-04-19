@@ -5,4 +5,4 @@ requests/
 
 .idea/
 
-scripts/
+scripts/__pycache__

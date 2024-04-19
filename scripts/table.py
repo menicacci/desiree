@@ -23,6 +23,7 @@ def check_processed_tables(json_file_path: str, tables_directory_path: str):
     if not os.path.exists(tables_directory_path):
         return
 
+    reset_processed_tables(json_file_path)
     data = load_tables_from_json(json_file_path)
 
     for file_name in os.listdir(tables_directory_path):

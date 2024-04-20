@@ -1,3 +1,3 @@
-You have to consider ALL the table cells during the extraction, do NOT ignore any of them. If you are considering a cell, use ALL of its values. HTML tags must NOT be extracted.
+You have to consider ALL the table cells during the extraction, do NOT ignore any of them. If you are considering a cell, use ALL of its values. HTML tags must NOT be extracted inside the claims.
 Before starting with the extraction, check if the table actually contains scientific results, if NOT, act accordingly.
 Respond ONLY with the conditional claims, DO NOT enumerate them in any way. You have to extract ALL of them. You can NOT answer with something like "and so on".

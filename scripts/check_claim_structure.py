@@ -154,7 +154,6 @@ def get_table_values(html_table):
 
     table_values = remove_duplicates(column_names + table_values)
     table_values = [str(value) for value in table_values]
-    table_values.sort()
 
     return table_values, table
 

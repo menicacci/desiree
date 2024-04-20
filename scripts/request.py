@@ -4,6 +4,7 @@ import json
 import time
 from openai.lib.azure import AzureOpenAI
 from requests.exceptions import ReadTimeout
+from scripts import utils
 
 
 def extract_infos(json_file_path) -> dict:
@@ -19,11 +20,6 @@ def init_client(infos: dict):
     )
 
     return client
-
-
-def check_path(path):
-    if not os.path.exists(path):
-        os.makedirs(path)
 
 
 def num_tokens_from_string(string: str) -> int:
@@ -134,7 +130,7 @@ def extract_claims(client, article_table, file_name, messages_file_paths, output
     table_html = article_table['table'].encode('ascii', 'ignore').decode()
 
     output_prompts_folder = output_folder + '/prompts'
-    check_path(output_prompts_folder)
+    utils.check_path(output_prompts_folder)
     prompt, input_tokens = build_messages(file_name, messages_file_paths, table_html, output_prompts_folder)
 
     print(f"Sending request for: [{file_name}]")
@@ -150,5 +146,5 @@ def extract_claims(client, article_table, file_name, messages_file_paths, output
         return
 
     output_answers_folder = output_folder + '/answers'
-    check_path(output_answers_folder)
+    utils.check_path(output_answers_folder)
     save_answer_and_stats(answer, input_tokens, output_tokens, request_time, stream, file_name, output_answers_folder)

@@ -1,3 +1,12 @@
+import os
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+def check_path(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
 
 def print_claim(claim):
     yellow = '\033[93m'
@@ -61,3 +70,41 @@ def print_results_map(results_map):
         for outcome in measure_info['outcomes']:
             print(f"  {outcome}")
         print()
+
+
+def plot_grouped_bars(data, ax):
+    values = [item[1] for item in data]
+    groups = [item[0].split('_')[0] for item in data]
+
+    group_colors = {}
+    unique_groups = set(groups)
+    colors = plt.cm.tab10.colors
+    for i, group in enumerate(unique_groups):
+        group_colors[group] = colors[i % len(colors)]
+
+    for i, (value, group) in enumerate(zip(values, groups)):
+        ax.bar(i, value, color=group_colors[group], width=1.0)
+
+    average = np.mean(values)
+    median = np.median(values)
+
+    ax.axhline(y=average, color='red', linestyle='--', label=f'Average: {average:.2f}')
+    ax.axhline(y=median, color='green', linestyle='-.', label=f'Median: {median:.2f}')
+
+    ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+    ax.legend(loc='lower right')
+
+
+def plot_dataset_results(dataset_results):
+    n = len(dataset_results)
+    rows = n // 3 if n % 3 == 0 else n // 3 + 1
+
+    fig, axs = plt.subplots(rows, 3, figsize=(16, 12))
+
+    for i, result in enumerate(dataset_results):
+        row = i // 3
+        col = i % 3
+        plot_grouped_bars(result, axs[row, col])
+
+    plt.tight_layout()
+    plt.show()

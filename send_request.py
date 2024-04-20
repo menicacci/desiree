@@ -44,38 +44,13 @@ answers_folder = 'requests/answers'
 connection_infos = ru.extract_infos('private.json')
 
 instr = '''
-Act as a computer scientist.
-
-Write just the function.
+...
 '''
 
 req = '''
-With this function I create a map:
-
-def count_specifications(table_claims):
-    specs_map = {}
-
-    for claim in table_claims:
-        for spec in claim['specifications']:
-            spec_name = spec['name']
-            spec_value = spec['value']
-
-            if spec_name not in specs_map:
-                specs_map[spec_name] = {"count": 0, "values": {}}
-
-            specs_map[spec_name]["count"] += 1
-
-            spec_values = specs_map[spec_name]["values"]
-            if spec_value not in spec_values:
-                spec_values[spec_value] = 0
-
-            spec_values[spec_value] += 1
-
-    return specs_map
-
-Write a function to print it
+...
 '''
 
-req_id = '0027'
+req_id = '...'
 
 run(connection_infos, prompts_folder, answers_folder, instr, req, req_id)

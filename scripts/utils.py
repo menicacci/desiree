@@ -1,11 +1,46 @@
 import os
 import matplotlib.pyplot as plt
 import numpy as np
+import re
+
+
+def remove_duplicates(input_list: list):
+    return list(set(input_list))
 
 
 def check_path(path):
     if not os.path.exists(path):
         os.makedirs(path)
+
+
+def detect_number(string):
+    string = string.replace(' ', '')
+    if string == '' or not string[0].isdigit():
+        return False
+
+    # Substitutes a dot between two numbers
+    string = re.sub(r'(?<=\d)\.(?=\d)', '1', string)
+
+    digit_count = sum(c.isdigit() for c in string)
+    non_digit_count = len(string) - digit_count
+
+    if digit_count >= 0.5 * (digit_count + non_digit_count):
+        numerical_part = re.search(r'[\d.]+', string).group()
+        if numerical_part:
+            return True
+
+    return False
+
+
+def count_occurrences(elements):
+    occurrences = {}
+    for elem in elements:
+        if elem in occurrences:
+            occurrences[elem] += 1
+        else:
+            occurrences[elem] = 1
+
+    return occurrences
 
 
 def print_claim(claim):
@@ -95,16 +130,25 @@ def plot_grouped_bars(data, ax):
     ax.legend(loc='lower right')
 
 
-def plot_dataset_results(dataset_results):
-    n = len(dataset_results)
-    rows = n // 3 if n % 3 == 0 else n // 3 + 1
+def plot_dataset_results(dataset_results, num_cols=5):
+    num_plots = len(dataset_results)
+    num_cols = max(min(num_plots, num_cols), 2)
+    num_rows = (num_plots + num_cols - 1) // num_cols
 
-    fig, axs = plt.subplots(rows, 3, figsize=(16, 12))
+    fig, axes = plt.subplots(num_rows, num_cols, figsize=(6*num_cols, 4*num_rows))
 
-    for i, result in enumerate(dataset_results):
-        row = i // 3
-        col = i % 3
-        plot_grouped_bars(result, axs[row, col])
+    for idx, (key, result) in enumerate(dataset_results.items()):
+        row = idx // num_cols
+        col = idx % num_cols
+        ax = axes[row, col] if num_rows > 1 else axes[col]
+        plot_grouped_bars(result, ax)
+
+        ax.text(0.5, 0.05, f'Prompt: {key}', transform=ax.transAxes, fontsize=10,
+                horizontalalignment='center', bbox=dict(facecolor='white', alpha=0.8))
+
+    if num_plots % num_cols != 0:
+        for j in range(num_plots % num_cols, num_cols):
+            axes[-1, j].axis('off')
 
     plt.tight_layout()
     plt.show()

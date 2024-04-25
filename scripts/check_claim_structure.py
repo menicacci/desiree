@@ -2,6 +2,7 @@ import re
 import os
 import json
 import pandas as pd
+from scripts import utils
 
 
 def check_tuple(input_str: str):
@@ -111,9 +112,6 @@ def count_specifications(table_claims):
             results_map[claim_measure]["count"] += 1
             results_map[claim_measure]["outcomes"].append(claim_outcome)
 
-    all_values = remove_duplicates(all_values)
-    all_values.sort()
-
     return specs_map, results_map, all_values
 
 
@@ -139,10 +137,6 @@ def get_non_null_values(df):
     return non_null_values
 
 
-def remove_duplicates(input_list: list):
-    return list(set(input_list))
-
-
 def get_table_values(html_table):
     table = pd.read_html(html_table)
 
@@ -152,9 +146,7 @@ def get_table_values(html_table):
         column_names += combine_column_names(pd_table.columns.tolist())
         table_values += get_non_null_values(pd_table)
 
-    table_values = remove_duplicates(column_names + table_values)
     table_values = [str(value) for value in table_values]
-
     return table_values, table
 
 

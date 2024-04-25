@@ -3,7 +3,7 @@ import json
 from bs4 import BeautifulSoup
 
 
-def clean_html(element):
+def clean_html(element, remove_citations):
     if 'class' in element.attrs:
         del element['class']
     if 'style' in element.attrs:
@@ -27,6 +27,11 @@ def clean_html(element):
         if 'id' in child.attrs:
             del child['id']
 
+    if remove_citations:
+        # Remove <cite> tags
+        for cite_tag in element.find_all('cite'):
+            cite_tag.extract()
+
     nested_tables = element.find_all('table')
     for t in nested_tables:
         parent = t.find_parent('td')
@@ -39,7 +44,7 @@ def clean_html(element):
     return element
 
 
-def extract_tables_from_html(html_file_path):
+def extract_tables_from_html(html_file_path, remove_citations=False):
     with open(html_file_path, 'r', encoding='utf-8') as file:
         html_content = file.read()
 
@@ -48,7 +53,7 @@ def extract_tables_from_html(html_file_path):
 
     extracted_tables = []
     for table in tables:
-        clean_table = clean_html(table)
+        clean_table = clean_html(table, remove_citations)
 
         table_string = clean_table.encode(encoding='utf-8').decode('utf-8')
         table_string = table_string.replace('\n', '')

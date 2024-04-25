@@ -1,32 +1,26 @@
 import numpy as np
-from scripts import check_claim_structure as cs
 import difflib
-import re
+from scripts import check_claim_structure as cs
+from scripts import utils
 
 
-def evaluate_scores(scores_dict):
-    # Extract scores from the dictionary
-    scores = np.array(list(scores_dict.values()))
-    return np.mean(scores)
+def evaluate(similarities, table_values, values_extracted):
+    table_strings_occurrences = utils.count_occurrences(table_values)
+    claim_strings_occurrences = utils.count_occurrences(values_extracted)
 
+    global_score = 0
+    positive_score = 0
+    for table_string, similar_claim_strings in similarities.items():
+        t_string_occurrences = table_strings_occurrences[table_string]
 
-def detect_number(string):
-    string = string.replace(' ', '')
-    if string == '' or not string[0].isdigit():
-        return False
+        global_score += t_string_occurrences
+        if bool(similar_claim_strings):
+            c_string_occurrences = min(
+                [claim_strings_occurrences[similar_string] for similar_string in similar_claim_strings]
+            )
+            positive_score += min(c_string_occurrences, t_string_occurrences)
 
-    # Substitutes a dot between two numbers
-    string = re.sub(r'(?<=\d)\.(?=\d)', '1', string)
-
-    digit_count = sum(c.isdigit() for c in string)
-    non_digit_count = len(string) - digit_count
-
-    if digit_count >= 0.5 * (digit_count + non_digit_count):
-        numerical_part = re.search(r'[\d.]+', string).group()
-        if numerical_part:
-            return True
-
-    return False
+    return positive_score/global_score
 
 
 def find_similar_strings(input_list, search_list, standard_threshold=0.6, number_threshold=0.75):
@@ -72,7 +66,7 @@ def find_similar_strings(input_list, search_list, standard_threshold=0.6, number
             similar_strings[item] = [m for m in matches if m not in to_remove]
 
     for item, matches in similar_strings.items():
-        if detect_number(item):
+        if utils.detect_number(item):
             to_remove = set()
 
             for match in matches:
@@ -96,12 +90,16 @@ def evaluate_extracted_articles(claims: dict, extracted_tables: dict):
         for table_idx in claims[article_id].keys():
 
             html_table = extracted_tables[article_id][table_idx]['table']
-            table_vales, _ = cs.get_table_values(html_table)
+            table_values, _ = cs.get_table_values(html_table)
+            unique_table_values = utils.remove_duplicates(table_values)
 
             claim_values = claims[article_id][table_idx]['extracted_claims']
-            _, _, values_extracted = cs.count_specifications(claim_values)
+            claim_specs, claim_results, values_extracted = cs.count_specifications(claim_values)
+            unique_values_extracted = utils.remove_duplicates(values_extracted)
 
-            similarities, similarity_scores = find_similar_strings(table_vales, values_extracted)
-            evaluation[f"{article_id}_{table_idx}"] = evaluate_scores(similarity_scores)
+            similarities, similarity_scores = find_similar_strings(unique_table_values, unique_values_extracted)
+            evaluation[f"{article_id}_{table_idx}"] = evaluate(similarities, table_values, values_extracted)
 
     return evaluation
+
+

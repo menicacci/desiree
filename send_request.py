@@ -43,13 +43,9 @@ prompts_folder = 'requests/prompts'
 answers_folder = 'requests/answers'
 connection_infos = ru.extract_infos('private.json')
 
-instr = '''
-...
-'''
+instr = '''...'''
 
-req = '''
-...
-'''
+req = '''...'''
 
 req_id = '...'
 

@@ -133,7 +133,7 @@ def combine_column_names(columns):
 def get_non_null_values(df):
     non_null_values = []
     for column in df.columns:
-        non_null_values.extend(df[column].dropna().tolist())
+        non_null_values.extend([value for value in df[column] if pd.notnull(value) and value != '-'])
     return non_null_values
 
 

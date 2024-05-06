@@ -76,6 +76,13 @@ def find_similar_strings(input_list, search_list, standard_threshold=0.6, number
 
             similar_strings[item] = [m for m in matches if m not in to_remove]
 
+    for item, matches in similar_strings.items():
+        if not matches:
+            for item_input in search_list:
+                if item in item_input:
+                    matches.append(item_input)
+                    continue
+
     scores = {}
     for item, matches in similar_strings.items():
         scores[item] = difflib.SequenceMatcher(None, item.lower(), " ".join(matches).lower()).ratio()

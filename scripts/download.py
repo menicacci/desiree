@@ -16,11 +16,16 @@ def download_page(url, save_folder):
         with open(file_name, "wb") as f:
             f.write(response.content)
         print(f"Page downloaded: {file_name}")
+        return 1
     else:
         print(f"Failed to download page from: {url}")
+        return 0
 
 
 def download_articles(articles, save_folder):
+    articles_downloaded = 0
+    articles_unavailable = 0
+
     for article in articles:
         link = article.find("a")['href']
         html_link = link.replace("arxiv.org", "ar5iv.org")
@@ -28,14 +33,21 @@ def download_articles(articles, save_folder):
         response_mod = requests.head(html_link, allow_redirects=True)
         if response_mod.url == link:
             print(f"{link} redirects to the original link. Skipping...")
+            articles_unavailable += 1
         else:
             print(f"{link} doesn't redirect to the original link. Downloading...")
-            download_page(html_link, save_folder)
+            articles_downloaded += download_page(html_link, save_folder)
+
+    return articles_downloaded, articles_unavailable
 
 
 def get_articles(query: str, save_folder: str):
     if not os.path.exists(save_folder):
         os.makedirs(save_folder)
+
+    articles_found = 0
+    articles_downloaded = 0
+    articles_unavailable = 0
 
     start = 0
     size = 200
@@ -49,8 +61,16 @@ def get_articles(query: str, save_folder: str):
             if not articles or len(articles) == 0:
                 break
 
-            download_articles(articles, save_folder)
+            num_downloads, num_unavailables = download_articles(articles, save_folder)
+
+            articles_found += len(articles)
+            articles_downloaded += num_downloads
+            articles_unavailable += num_unavailables
 
             start += size
         else:
             break
+
+    print(f"# of articles found: {articles_found}")
+    print(f"# of articles available: {articles_found - articles_unavailable}")
+    print(f"# of articles downloaded: {articles_downloaded}")

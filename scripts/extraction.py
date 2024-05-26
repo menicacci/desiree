@@ -55,7 +55,7 @@ def extract_tables_from_html(html_file_path, remove_citations=False):
     for table in tables:
         clean_table = clean_html(table, remove_citations)
 
-        table_string = clean_table.encode(encoding='utf-8').decode('utf-8')
+        table_string = str(clean_table)
         table_string = table_string.replace('\n', '')
         extracted_tables.append({'table': table_string, 'processed': False})
 

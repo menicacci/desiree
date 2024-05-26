@@ -4,6 +4,10 @@ import numpy as np
 import re
 
 
+def remove_unicodes(input_string):
+    return re.sub(r'[^\x00-\x7F]+', '', input_string)
+
+
 def remove_duplicates(input_list: list):
     return list(set(input_list))
 
@@ -18,7 +22,6 @@ def detect_number(string):
     if string == '' or not string[0].isdigit():
         return False
 
-    # Substitutes a dot between two numbers
     string = re.sub(r'(?<=\d)\.(?=\d)', '1', string)
 
     digit_count = sum(c.isdigit() for c in string)
@@ -41,6 +44,40 @@ def count_occurrences(elements):
             occurrences[elem] = 1
 
     return occurrences
+
+
+def remove_items(items, to_remove):
+    return [item for item in items if item not in to_remove]
+
+
+def find_substrings(input_string, search_list, equality_f):
+    sub_strings = input_string.split()
+    
+    output = []
+    if len(sub_strings) == 1:
+        return output
+    
+
+    for sub_s in sub_strings:
+        for seach_s in search_list:
+            if equality_f(sub_s, seach_s) > 0:
+                output.append(seach_s)
+
+    len_output = len(output)
+    if len_output < 2:
+        return output
+    
+    to_remove = set()
+    for i in range(len_output - 1):
+        for j in range(i + 1, len_output):
+            if equality_f(output[i], output[j]) > 0:
+                sim_to_i = equality_f(input_string, output[i])
+                sim_to_j = equality_f(input_string, output[j])
+
+                to_remove.add(output[i] if sim_to_i > sim_to_j else output[j])
+    
+    output = [s for s in output if s not in to_remove]
+    return output
 
 
 def print_claim(claim):

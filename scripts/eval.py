@@ -1,7 +1,6 @@
-import numpy as np
-import difflib
-from scripts import check_claim_structure as cs
-from scripts import utils
+from scripts import utils, table, check_claim_structure as cs
+from scripts.similarity import Similarity
+import os
 
 
 def evaluate(similarities, table_values, values_extracted):
@@ -23,6 +22,49 @@ def evaluate(similarities, table_values, values_extracted):
     return positive_score/global_score
 
 
+def evaluate_extracted_articles(claims: dict, extracted_tables: dict):
+    evaluation = {}
+    similarity = Similarity()
+
+    for article_id in claims.keys():
+        for table_idx in claims[article_id].keys():
+
+            html_table = extracted_tables[article_id][table_idx]['table']
+            table_values, _ = cs.get_table_values(html_table)
+            unique_table_values = utils.remove_duplicates(table_values)
+
+            claim_values = claims[article_id][table_idx]['extracted_claims']
+            claim_specs, claim_results, values_extracted = cs.count_specifications(claim_values)
+            unique_values_extracted = utils.remove_duplicates(values_extracted)
+
+            similarities = similarity.find_similar_strings(unique_table_values, unique_values_extracted)
+            evaluation[f"{article_id}_{table_idx}"] = evaluate(similarities, table_values, values_extracted)
+
+    return evaluation
+
+
+def process_datasets(tables_path, requests_path):
+    dataset_results = {}
+
+    # Iterate through all directories in dataset_path
+    for directory in os.listdir(requests_path):
+        if os.path.isdir(os.path.join(requests_path, directory)):
+            model_answers_path = os.path.join(requests_path, directory, 'answers')
+            extracted_claims_path = os.path.join(requests_path, directory, 'claims.json')
+
+            extracted_claims = cs.extract_answers(model_answers_path, extracted_claims_path)
+            extracted_tables = table.load_tables_from_json(tables_path)
+
+            results = evaluate_extracted_articles(extracted_claims, extracted_tables)
+            results = list(results.items())
+            results.sort()
+
+            dataset_results[directory] = results
+
+    return dataset_results
+
+"""
+### Old script
 def find_similar_strings(input_list, search_list, standard_threshold=0.6, number_threshold=0.75):
     similar_strings = {}
     for item in input_list:
@@ -88,25 +130,4 @@ def find_similar_strings(input_list, search_list, standard_threshold=0.6, number
         scores[item] = difflib.SequenceMatcher(None, item.lower(), " ".join(matches).lower()).ratio()
 
     return similar_strings, scores
-
-
-def evaluate_extracted_articles(claims: dict, extracted_tables: dict):
-    evaluation = {}
-
-    for article_id in claims.keys():
-        for table_idx in claims[article_id].keys():
-
-            html_table = extracted_tables[article_id][table_idx]['table']
-            table_values, _ = cs.get_table_values(html_table)
-            unique_table_values = utils.remove_duplicates(table_values)
-
-            claim_values = claims[article_id][table_idx]['extracted_claims']
-            claim_specs, claim_results, values_extracted = cs.count_specifications(claim_values)
-            unique_values_extracted = utils.remove_duplicates(values_extracted)
-
-            similarities, similarity_scores = find_similar_strings(unique_table_values, unique_values_extracted)
-            evaluation[f"{article_id}_{table_idx}"] = evaluate(similarities, table_values, values_extracted)
-
-    return evaluation
-
-
+"""

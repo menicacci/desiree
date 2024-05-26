@@ -5,6 +5,7 @@ import time
 from openai.lib.azure import AzureOpenAI
 from requests.exceptions import ReadTimeout
 from scripts import utils
+import concurrent.futures
 
 
 def extract_infos(json_file_path) -> dict:
@@ -148,3 +149,39 @@ def extract_claims(client, article_table, file_name, messages_file_paths, output
     output_answers_folder = output_folder + '/answers'
     utils.check_path(output_answers_folder)
     save_answer_and_stats(answer, input_tokens, output_tokens, request_time, stream, file_name, output_answers_folder)
+
+
+def run(connection_data: dict, messages_file_paths: dict, articles_tables: dict, output_path: str, num_threads: int):
+    clients = [init_client(connection_data) for _ in range(num_threads)]
+
+    original_prompt = f'''
+        SYSTEM 1: \n{read_file(messages_file_paths['system_1'])}\n\n
+        USER 1:\n{read_file(messages_file_paths['user_1'])}\n\n
+        ASSISTANT:\n{read_file(messages_file_paths['assistant'])}\n\n
+        USER 2:\n{read_file(messages_file_paths['user_2'])}\n\n
+        SYSTEM 2:\n{read_file(messages_file_paths['system_2'])}\n\n
+    '''
+
+    with open(os.path.join(output_path, 'prompt.txt'), "w") as text_file:
+        text_file.write(original_prompt)
+
+    progress = 0
+    with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
+        for article_id, article_tables in articles_tables.items():
+            for index, article_table in enumerate(article_tables):
+                if not article_table['processed']:
+                    executor.submit(
+                        extract_claims,
+                        clients[progress % num_threads],
+                        article_table,
+                        f"{article_id}_{index}",
+                        messages_file_paths,
+                        output_path
+                    )
+
+                    progress += 1
+
+    for client in clients:
+        client.close()
+
+    return

@@ -2,7 +2,8 @@ import re
 import os
 import json
 import pandas as pd
-from scripts import utils
+from scripts.utils import remove_unicodes
+from io import StringIO
 
 
 def check_tuple(input_str: str):
@@ -138,7 +139,7 @@ def get_non_null_values(df):
 
 
 def get_table_values(html_table):
-    table = pd.read_html(html_table)
+    table = pd.read_html(StringIO(html_table))
 
     column_names = []
     table_values = []
@@ -146,8 +147,11 @@ def get_table_values(html_table):
         column_names += combine_column_names(pd_table.columns.tolist())
         table_values += get_non_null_values(pd_table)
 
-    table_values = [str(value) for value in table_values]
-    return table_values, table
+    all_values = []
+    all_values.extend(remove_unicodes(str(value)) for value in table_values)
+    all_values.extend(remove_unicodes(str(value)) for value in column_names)
+
+    return all_values, table
 
 
 def extract_answers(answers_directory: str, json_path: str):

@@ -1,36 +1,60 @@
-from transformers import AutoTokenizer, AutoModel
-import torch
-from sklearn.metrics.pairwise import cosine_similarity
+from scripts import embedding
+from scripts.utils import detect_number, remove_items, find_substrings
+import difflib
 
+class Similarity:
 
-def load(model_path: str):
-    tokenizer = AutoTokenizer.from_pretrained(model_path)
-    model = AutoModel.from_pretrained(model_path)
+    def __init__(self, model_path='sentence-transformers/all-MiniLM-L6-v2', text_threshold=0.8, num_threshold=0.75):
+        self.tokenizer, self.model = embedding.load(model_path)
+        self.text_threshold = text_threshold
+        self.num_threshold = num_threshold
 
-    return tokenizer, model
-
-
-def mean_pooling(model_output, attention_mask):
-    token_embeddings = model_output[0]
-    input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
-    return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
-
-
-def get_sentence_embedding(sentence, tokenizer, model):
-    encoded_input = tokenizer(sentence, padding=True, truncation=True, return_tensors='pt')
     
-    with torch.no_grad():
-        model_output = model(**encoded_input)
+    def get_similarity(self, str_1: str, str_2: str) -> float:
+        if detect_number(str_1) and detect_number(str_2):
+            return difflib.SequenceMatcher(None, str_1.lower(), str_2.lower()).ratio() - self.num_threshold
+        else:
+            return embedding.compute_similarity(
+                tokenizer=self.tokenizer,
+                model=self.model,
+                text_1=str_1,
+                text_2=str_2
+            ) - self.text_threshold
+        
+
+    def check_equality(self, str_1: str, str_2: str) -> bool:
+        return self.get_similarity(str_1, str_2) > 0
     
-    sentence_embedding = mean_pooling(model_output, encoded_input['attention_mask'])
-    return sentence_embedding.numpy()
 
+    def find_similar_strings(self, input_list: list, search_list):
+        similar_strings = {input_string: [] for input_string in input_list}
 
-def compute(text1, text2, tokenizer, model):
-    embedding1 = get_sentence_embedding(text1, tokenizer, model)
-    embedding2 = get_sentence_embedding(text2, tokenizer, model)
-    
-    similarity = cosine_similarity(embedding1, embedding2)[0][0]
-    return similarity
+        found = set()
+        for input_string in input_list:
+            for search_string  in search_list:
+                if self.check_equality(input_string, search_string):
+                    similar_strings[input_string].append(search_string)
+                    found.add(input_string)
 
+        for input_string in found:
+            similar_strings[input_string] = [max(similar_strings[input_string], key=lambda x: self.get_similarity(input_string, x))]
+        
+        input_list = remove_items(input_list, found)
+        found.clear()
 
+        for input_string in input_list:
+            similar_substrings = find_substrings(input_string, search_list, self.get_similarity)    
+            if len(similar_strings) > 0:
+                found.add(input_string)
+                similar_strings[input_string] = similar_substrings
+
+        input_list = remove_items(input_list, found)
+        found.clear()
+
+        for search_string in search_list:
+            similar_substrings = find_substrings(search_string, input_list, self.get_similarity)
+            for string in similar_substrings:
+                found.add(string)
+                similar_strings[string] = [search_string]
+
+        return similar_strings                       

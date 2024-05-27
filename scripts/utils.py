@@ -2,6 +2,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import re
+import difflib
 
 
 def remove_unicodes(input_string):
@@ -78,6 +79,14 @@ def find_substrings(input_string, search_list, equality_f):
     
     output = [s for s in output if s not in to_remove]
     return output
+
+
+def fuzzy_string_similarity(str_1, str_2, lower=True):
+    if lower:
+        str_1 = str_1.lower()
+        str_2 = str_2.lower()
+
+    return difflib.SequenceMatcher(None, str_1, str_2).ratio()
 
 
 def print_claim(claim):
@@ -166,6 +175,7 @@ def plot_grouped_bars(data, ax):
     ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
     ax.legend(loc='lower right')
 
+    return group_colors
 
 def plot_dataset_results(dataset_results, num_cols=5):
     num_plots = len(dataset_results)
@@ -174,14 +184,18 @@ def plot_dataset_results(dataset_results, num_cols=5):
 
     fig, axes = plt.subplots(num_rows, num_cols, figsize=(6*num_cols, 4*num_rows))
 
+    all_group_colors = {}
+
     for idx, (key, result) in enumerate(dataset_results.items()):
         row = idx // num_cols
         col = idx % num_cols
         ax = axes[row, col] if num_rows > 1 else axes[col]
-        plot_grouped_bars(result, ax)
+        group_colors = plot_grouped_bars(result, ax)
 
         ax.text(0.5, 0.05, f'Prompt: {key}', transform=ax.transAxes, fontsize=10,
                 horizontalalignment='center', bbox=dict(facecolor='white', alpha=0.8))
+
+        all_group_colors[key] = group_colors
 
     if num_plots % num_cols != 0:
         for j in range(num_plots % num_cols, num_cols):
@@ -189,3 +203,23 @@ def plot_dataset_results(dataset_results, num_cols=5):
 
     plt.tight_layout()
     plt.show()
+
+    return all_group_colors
+
+
+def print_colored_bar(color):
+    r, g, b = int(color[0] * 255), int(color[1] * 255), int(color[2] * 255)
+    return f"\033[48;2;{r};{g};{b}m  \033[0m"
+
+
+def show_key_group_colors(all_group_colors):
+    key_group_colors = {}
+    for key, group_colors in all_group_colors.items():
+        key_group_colors[key] = [(group, color) for group, color in group_colors.items()]
+
+    for key, groups_colors in key_group_colors.items():
+        print(f"Dir: {key}")
+        for group, color in groups_colors:
+            colored_bar = print_colored_bar(color)
+            print(f"{group}({colored_bar})", end="\t")
+        print()

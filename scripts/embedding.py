@@ -32,5 +32,3 @@ def compute_similarity(tokenizer, model, text_1, text_2):
     
     similarity = cosine_similarity(embedding1, embedding2)[0][0]
     return similarity
-
-

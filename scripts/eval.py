@@ -22,28 +22,32 @@ def evaluate(similarities, table_values, values_extracted):
     return positive_score/global_score
 
 
-def evaluate_extracted_articles(claims: dict, extracted_tables: dict):
+def evaluate_table(sim: Similarity, html_table: str, claim_values: dict):
+    table_values, _ = cs.get_table_values(html_table)
+    unique_table_values = utils.remove_duplicates(table_values)
+
+    claim_specs, claim_results, values_extracted = cs.count_specifications(claim_values)
+    unique_values_extracted = utils.remove_duplicates(values_extracted)
+
+    similarities = sim.find_similar_strings(unique_table_values, unique_values_extracted)
+    return evaluate(similarities, table_values, values_extracted)
+
+
+def evaluate_extracted_articles(claims: dict, extracted_tables: dict, use_embeddings: bool):
     evaluation = {}
-    similarity = Similarity()
+    sim = Similarity(use_embeddings=use_embeddings)
 
     for article_id in claims.keys():
         for table_idx in claims[article_id].keys():
-
             html_table = extracted_tables[article_id][table_idx]['table']
-            table_values, _ = cs.get_table_values(html_table)
-            unique_table_values = utils.remove_duplicates(table_values)
+            claim_dict = claims[article_id][table_idx]['extracted_claims']
 
-            claim_values = claims[article_id][table_idx]['extracted_claims']
-            claim_specs, claim_results, values_extracted = cs.count_specifications(claim_values)
-            unique_values_extracted = utils.remove_duplicates(values_extracted)
-
-            similarities = similarity.find_similar_strings(unique_table_values, unique_values_extracted)
-            evaluation[f"{article_id}_{table_idx}"] = evaluate(similarities, table_values, values_extracted)
+            evaluation[f"{article_id}_{table_idx}"] = evaluate_table(sim, html_table, claim_dict)
 
     return evaluation
 
 
-def process_datasets(tables_path, requests_path):
+def process_datasets(tables_path, requests_path, use_embeddings=True):
     dataset_results = {}
 
     # Iterate through all directories in dataset_path
@@ -55,79 +59,10 @@ def process_datasets(tables_path, requests_path):
             extracted_claims = cs.extract_answers(model_answers_path, extracted_claims_path)
             extracted_tables = table.load_tables_from_json(tables_path)
 
-            results = evaluate_extracted_articles(extracted_claims, extracted_tables)
+            results = evaluate_extracted_articles(extracted_claims, extracted_tables, use_embeddings)
             results = list(results.items())
             results.sort()
 
             dataset_results[directory] = results
 
     return dataset_results
-
-"""
-### Old script
-def find_similar_strings(input_list, search_list, standard_threshold=0.6, number_threshold=0.75):
-    similar_strings = {}
-    for item in input_list:
-        item_lower = item.lower()
-        similar_strings[item] = []
-        original_match_found = False
-        # Check for exact match
-        for string in search_list:
-            string_lower = string.lower()
-            if item_lower == string_lower:
-                similar_strings[item] = [string]
-                original_match_found = True
-                break
-
-        if not original_match_found:
-            # Check for similar substrings
-            for sub_item in item.split():
-                sub_item_lower = sub_item.lower()
-                for string in search_list:
-                    string_lower = string.lower()
-                    similarity_ratio = difflib.SequenceMatcher(None, sub_item_lower, string_lower).ratio()
-                    if similarity_ratio >= standard_threshold:
-                        similar_strings[item].append(string)
-
-    # Remove similar strings within each result
-    for item, matches in similar_strings.items():
-        if len(matches) > 1:
-            to_remove = set()
-            for i in range(len(matches)):
-                for j in range(i + 1, len(matches)):
-                    similarity_ratio = difflib.SequenceMatcher(None, matches[i].lower(), matches[j].lower()).ratio()
-                    if similarity_ratio >= standard_threshold:
-                        similarity_to_item_i = difflib.SequenceMatcher(None, item.lower(), matches[i].lower()).ratio()
-                        similarity_to_item_j = difflib.SequenceMatcher(None, item.lower(), matches[j].lower()).ratio()
-
-                        if similarity_to_item_i > similarity_to_item_j:
-                            to_remove.add(matches[j])
-                        else:
-                            to_remove.add(matches[i])
-
-            similar_strings[item] = [m for m in matches if m not in to_remove]
-
-    for item, matches in similar_strings.items():
-        if utils.detect_number(item):
-            to_remove = set()
-
-            for match in matches:
-                similarity_to_item = difflib.SequenceMatcher(None, item.lower(), match.lower()).ratio()
-                if similarity_to_item <= number_threshold:
-                    to_remove.add(match)
-
-            similar_strings[item] = [m for m in matches if m not in to_remove]
-
-    for item, matches in similar_strings.items():
-        if not matches:
-            for item_input in search_list:
-                if item in item_input:
-                    matches.append(item_input)
-                    continue
-
-    scores = {}
-    for item, matches in similar_strings.items():
-        scores[item] = difflib.SequenceMatcher(None, item.lower(), " ".join(matches).lower()).ratio()
-
-    return similar_strings, scores
-"""

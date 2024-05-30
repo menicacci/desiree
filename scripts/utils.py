@@ -18,6 +18,13 @@ def check_path(path):
         os.makedirs(path)
 
 
+def get_json_file_name(query: str) -> str:
+    query = ' '.join(query.split())
+    file_name = query.replace(' ', '_')
+    file_name = file_name.lower() + '.json'
+    return file_name
+
+
 def detect_number(string):
     string = string.replace(' ', '')
     if string == '' or not string[0].isdigit():

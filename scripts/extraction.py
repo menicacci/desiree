@@ -1,6 +1,7 @@
 import os
 import json
 from bs4 import BeautifulSoup
+from scripts import utils
 
 
 def clean_html(element, remove_citations):
@@ -79,3 +80,20 @@ def save_tables_to_json(extracted_tables_map, output_file):
     filtered_tables_map = {article_id: tables for article_id, tables in extracted_tables_map.items() if tables}
     with open(output_file, 'w') as json_file:
         json.dump(filtered_tables_map, json_file, indent=4)
+
+
+def extract_and_save_tables(articles_directory: str, save_path: str, file_name: str):
+    articles_tables_map = extract_tables_from_directory(articles_directory)
+
+    utils.check_path(save_path)
+    file_name = os.path.join(save_path, file_name)
+
+    num_tables = 0
+    for article_id, article_tables in articles_tables_map.items():
+        num_article_tables = len(article_tables)
+        num_tables += num_article_tables
+        print(f"Article ID: {article_id} - # Tables Found: {num_article_tables}")
+    print(f"\nTotal number of tables found: {num_tables}")
+
+    save_tables_to_json(articles_tables_map, file_name)
+    

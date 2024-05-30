@@ -1,5 +1,6 @@
 from scripts import utils, table, check_claim_structure as cs
 from scripts.similarity import Similarity
+from scripts.constants import Constants
 import os
 
 
@@ -53,8 +54,8 @@ def process_datasets(tables_path, requests_path, use_embeddings=True):
     # Iterate through all directories in dataset_path
     for directory in os.listdir(requests_path):
         if os.path.isdir(os.path.join(requests_path, directory)):
-            model_answers_path = os.path.join(requests_path, directory, 'answers')
-            extracted_claims_path = os.path.join(requests_path, directory, 'claims.json')
+            model_answers_path = os.path.join(requests_path, directory, Constants.ANSWER_DIR)
+            extracted_claims_path = os.path.join(requests_path, directory, Constants.CLAIMS_FILENAME)
 
             extracted_claims = cs.extract_answers(model_answers_path, extracted_claims_path)
             extracted_tables = table.load_tables_from_json(tables_path)

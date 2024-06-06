@@ -5,6 +5,7 @@ import time
 from openai.lib.azure import AzureOpenAI
 from requests.exceptions import ReadTimeout
 from scripts import utils
+from scripts.constants import Constants
 import concurrent.futures
 
 
@@ -128,7 +129,7 @@ def save_answer_and_stats(answer, input_tokens, output_tokens, request_time, str
 
 
 def extract_claims(client, article_table, file_name, messages_file_paths, output_folder):
-    table_html = article_table['table'].encode('ascii', 'ignore').decode()
+    table_html = article_table[Constants.TABLE_ATTR].encode('ascii', 'ignore').decode()
 
     output_prompts_folder = output_folder + '/prompts'
     utils.check_path(output_prompts_folder)
@@ -169,7 +170,7 @@ def run(connection_data: dict, messages_file_paths: dict, articles_tables: dict,
     with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
         for article_id, article_tables in articles_tables.items():
             for index, article_table in enumerate(article_tables):
-                if not article_table['processed']:
+                if not article_table[Constants.PROCESSED_ATTR]:
                     executor.submit(
                         extract_claims,
                         clients[progress % num_threads],

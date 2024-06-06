@@ -11,19 +11,23 @@ def load_tables_from_json(json_file):
 
 def reset_processed_tables(json_file_path: str):
     data = load_tables_from_json(json_file_path)
+    num_tables = 0
 
     for table_id, table_list in data.items():
         for table_data in table_list:
             table_data['processed'] = False
+            num_tables += 1
 
     with open(json_file_path, 'w') as json_file:
         json.dump(data, json_file, indent=4)
+
+    return num_tables
 
 
 def check_processed_tables(json_file_path: str, tables_directory_path: str):
     utils.check_path(tables_directory_path)
 
-    reset_processed_tables(json_file_path)
+    tables_to_process = reset_processed_tables(json_file_path)
     data = load_tables_from_json(json_file_path)
 
     for file_name in os.listdir(tables_directory_path):
@@ -39,7 +43,10 @@ def check_processed_tables(json_file_path: str, tables_directory_path: str):
                 article = data[article_id]
                 if 0 <= table_index < len(article):
                     article[table_index]['processed'] = True
+                    tables_to_process -= 1
+                    
 
     with open(json_file_path, 'w') as json_file:
         json.dump(data, json_file, indent=4)
 
+    return tables_to_process

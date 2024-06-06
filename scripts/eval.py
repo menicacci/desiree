@@ -54,7 +54,7 @@ def process_datasets(tables_path, requests_path, use_embeddings=True):
     # Iterate through all directories in dataset_path
     for directory in os.listdir(requests_path):
         if os.path.isdir(os.path.join(requests_path, directory)):
-            model_answers_path = os.path.join(requests_path, directory, Constants.ANSWER_DIR)
+            model_answers_path = os.path.join(requests_path, directory, Constants.LLM_ANSWER_DIR)
             extracted_claims_path = os.path.join(requests_path, directory, Constants.CLAIMS_FILENAME)
 
             extracted_claims = cs.extract_answers(model_answers_path, extracted_claims_path)

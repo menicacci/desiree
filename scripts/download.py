@@ -13,6 +13,11 @@ def download_page(url, save_folder):
     response = requests.get(url)
     if response.status_code == 200:
         file_name = os.path.join(save_folder, url.split("/")[-1] + ".html")
+
+        if os.path.exists(file_name):
+            print("\033[38;2;255;165;0mAlready Downloaded\033[0m")
+            return 1
+
         with open(file_name, "wb") as f:
             f.write(response.content)
         print(f"Page downloaded: {file_name}")

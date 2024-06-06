@@ -2,15 +2,18 @@ import os
 import json
 from bs4 import BeautifulSoup
 from scripts import utils
+from scripts.constants import Constants
+
+def clean_element(element, to_del):
+    for e in to_del:
+        if e in element.attrs:
+            del element[e]
 
 
 def clean_html(element, remove_citations):
-    if 'class' in element.attrs:
-        del element['class']
-    if 'style' in element.attrs:
-        del element['style']
-    if 'id' in element.attrs:
-        del element['id']
+    to_del = ['class', 'style', 'id']
+
+    clean_element(element, to_del)
 
     for child in element.find_all(recursive=True):
         # Remove all attributes except rowspan and colspan
@@ -18,15 +21,8 @@ def clean_html(element, remove_citations):
         for attribute in list(child.attrs.keys()):
             if attribute not in attributes_to_keep:
                 del child[attribute]
-        # Remove classes
-        if 'class' in child.attrs:
-            del child['class']
-        # Remove inline styles
-        if 'style' in child.attrs:
-            del child['style']
-        # Remove IDs
-        if 'id' in child.attrs:
-            del child['id']
+        
+        clean_element(child, to_del)
 
     if remove_citations:
         # Remove <cite> tags
@@ -58,7 +54,10 @@ def extract_tables_from_html(html_file_path, remove_citations=False):
 
         table_string = str(clean_table)
         table_string = table_string.replace('\n', '')
-        extracted_tables.append({'table': table_string, 'processed': False})
+        extracted_tables.append({
+            Constants.TABLE_ATTR: table_string, 
+            Constants.PROCESSED_ATTR: False
+        })
 
     return extracted_tables
 

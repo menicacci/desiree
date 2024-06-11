@@ -164,6 +164,12 @@ def plot_grouped_bars(data, ax):
     values = [item[1] for item in data]
     groups = [item[0].split('_')[0] for item in data]
 
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(10, 6))
+        show_plot = True
+    else:
+        show_plot = False 
+
     group_colors = {}
     unique_groups = set(groups)
     colors = plt.cm.tab10.colors
@@ -181,6 +187,9 @@ def plot_grouped_bars(data, ax):
 
     ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
     ax.legend(loc='lower right')
+
+    if show_plot:
+        plt.show()
 
     return group_colors
 
@@ -230,3 +239,4 @@ def show_key_group_colors(all_group_colors):
             colored_bar = print_colored_bar(color)
             print(f"{group}({colored_bar})", end="\t")
         print()
+        

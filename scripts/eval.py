@@ -20,7 +20,7 @@ def evaluate(similarities, table_values, values_extracted):
             )
             positive_score += min(c_string_occurrences, t_string_occurrences)
 
-    return positive_score/global_score
+    return positive_score/global_score if global_score is not 0 else 0
 
 
 def evaluate_table(sim: Similarity, html_table: str, claim_values: dict):
@@ -34,34 +34,58 @@ def evaluate_table(sim: Similarity, html_table: str, claim_values: dict):
     return evaluate(similarities, table_values, values_extracted)
 
 
-def evaluate_extracted_articles(claims: dict, extracted_tables: dict, use_embeddings: bool):
+def wrong_claims_prc(data_dir: str):
+    model_answers_path = os.path.join(data_dir, Constants.LLM_ANSWER_DIR)
+    extracted_claims_path = os.path.join(data_dir, Constants.CLAIMS_FILENAME)
+    extracted_claims = cs.extract_answers(model_answers_path, extracted_claims_path)
+
+    claims_correctness_prc = {}
+    ovr_crt = 0
+    ovr_wrg = 0
+
+    for article_id, tables_dict in extracted_claims.items():
+        for table_id, table_dict in tables_dict.items():
+            correct_table_claims = table_dict['extracted_claims']
+            wrong_table_claims = table_dict['wrong_claims']
+
+            table_crt = len(correct_table_claims)
+            table_wrg = len(wrong_table_claims)
+
+            claims_correctness_prc[f"{article_id}_{table_id}"] = utils.divide_by_sum(table_crt, table_wrg)
+
+            ovr_crt += table_crt
+            ovr_wrg += table_wrg
+
+    return list(claims_correctness_prc.items()), utils.divide_by_sum(ovr_crt, ovr_wrg)
+
+
+def evaluate_extracted_articles(tables_path: str, data_dir: str, use_embeddings: bool):
+    model_answers_path = os.path.join(data_dir, Constants.LLM_ANSWER_DIR)
+    extracted_claims_path = os.path.join(data_dir, Constants.CLAIMS_FILENAME)
+
+    extracted_claims = cs.extract_answers(model_answers_path, extracted_claims_path)
+    extracted_tables = table.load_tables_from_json(tables_path)
+
     evaluation = {}
     sim = Similarity(use_embeddings=use_embeddings)
-
-    for article_id in claims.keys():
-        for table_idx in claims[article_id].keys():
+    for article_id in extracted_claims.keys():
+        for table_idx in extracted_claims[article_id].keys():
             html_table = extracted_tables[article_id][table_idx]['table']
-            claim_dict = claims[article_id][table_idx]['extracted_claims']
+            claim_dict = extracted_claims[article_id][table_idx]['extracted_claims']
 
             evaluation[f"{article_id}_{table_idx}"] = evaluate_table(sim, html_table, claim_dict)
 
-    return evaluation
+    return list(evaluation.items())
 
 
 def process_datasets(tables_path, requests_path, use_embeddings=True):
     dataset_results = {}
 
-    # Iterate through all directories in dataset_path
     for directory in os.listdir(requests_path):
-        if os.path.isdir(os.path.join(requests_path, directory)):
-            model_answers_path = os.path.join(requests_path, directory, Constants.LLM_ANSWER_DIR)
-            extracted_claims_path = os.path.join(requests_path, directory, Constants.CLAIMS_FILENAME)
+        data_dir = os.path.join(requests_path, directory)
 
-            extracted_claims = cs.extract_answers(model_answers_path, extracted_claims_path)
-            extracted_tables = table.load_tables_from_json(tables_path)
-
-            results = evaluate_extracted_articles(extracted_claims, extracted_tables, use_embeddings)
-            results = list(results.items())
+        if os.path.isdir(data_dir):
+            results = evaluate_extracted_articles(tables_path, data_dir, use_embeddings)
             results.sort()
 
             dataset_results[directory] = results

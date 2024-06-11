@@ -18,6 +18,12 @@ def check_path(path):
         os.makedirs(path)
 
 
+def divide_by_sum(a, b):
+    a_float = float(a)
+    b_float = float(b)
+    return a_float / (a_float + b_float)
+
+
 def get_json_file_name(query: str) -> str:
     query = ' '.join(query.split())
     file_name = query.replace(' ', '_')
@@ -160,7 +166,7 @@ def print_results_map(results_map):
         print()
 
 
-def plot_grouped_bars(data, ax):
+def plot_grouped_bars(data, ax=None):
     values = [item[1] for item in data]
     groups = [item[0].split('_')[0] for item in data]
 
@@ -230,7 +236,7 @@ def print_colored_bar(color):
 
 def show_key_group_colors(all_group_colors):
     key_group_colors = {}
-    for key, group_colors in all_group_colors.items():
+    for key, group_colors in all_group_colors:
         key_group_colors[key] = [(group, color) for group, color in group_colors.items()]
 
     for key, groups_colors in key_group_colors.items():

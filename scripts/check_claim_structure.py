@@ -139,7 +139,10 @@ def get_non_null_values(df):
 
 
 def get_table_values(html_table):
-    table = pd.read_html(StringIO(html_table))
+    try:
+        table = pd.read_html(StringIO(html_table))
+    except ValueError:
+        return [], []
 
     column_names = []
     table_values = []

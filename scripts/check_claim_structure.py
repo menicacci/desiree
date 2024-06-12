@@ -3,6 +3,7 @@ import os
 import json
 import pandas as pd
 from scripts.utils import remove_unicodes
+from scripts.constants import Constants
 from io import StringIO
 
 
@@ -34,7 +35,10 @@ def check_claim(claim: str):
                         if name_value is None:
                             return None
 
-                        specifications_values.append({"name": name_value[0], "value": name_value[1]})
+                        specifications_values.append({
+                            Constants.NAME_ATTR: name_value[0], 
+                            Constants.VALUE_ATTR: name_value[1]
+                        })
 
                     measure = None
                     outcome = None
@@ -47,9 +51,9 @@ def check_claim(claim: str):
                         outcome = measure_outcome[1]
 
                     return {
-                        'specifications': specifications_values,
-                        'measure': measure,
-                        'outcome': outcome
+                        Constants.SPECS_ATTR: specifications_values,
+                        Constants.MEASURE_ATTR: measure,
+                        Constants.OUTCOME_ATTR: outcome
                     }
 
     else:
@@ -82,36 +86,42 @@ def count_specifications(table_claims):
     all_values = []
 
     for claim in table_claims:
-        for spec in claim['specifications']:
-            spec_name = spec['name']
-            spec_value = spec['value']
+        for spec in claim[Constants.SPECS_ATTR]:
+            spec_name = spec[Constants.NAME_ATTR]
+            spec_value = spec[Constants.VALUE_ATTR]
 
             all_values.append(spec_value)
             all_values.append(spec_name)
 
             if spec_name not in specs_map:
-                specs_map[spec_name] = {"count": 0, "values": {}}
+                specs_map[spec_name] = {
+                    Constants.COUNT_ATTR: 0, 
+                    Constants.VALUES_ATTR: {}
+                }
 
-            specs_map[spec_name]["count"] += 1
+            specs_map[spec_name][Constants.COUNT_ATTR] += 1
 
-            spec_values = specs_map[spec_name]["values"]
+            spec_values = specs_map[spec_name][Constants.VALUES_ATTR]
             if spec_value not in spec_values:
                 spec_values[spec_value] = 0
 
             spec_values[spec_value] += 1
 
-        if claim['measure'] is not None and claim['outcome'] is not None:
-            claim_measure = claim['measure']
-            claim_outcome = claim['outcome']
+        if claim[Constants.MEASURE_ATTR] is not None and claim[Constants.OUTCOME_ATTR] is not None:
+            claim_measure = claim[Constants.MEASURE_ATTR]
+            claim_outcome = claim[Constants.OUTCOME_ATTR]
 
             all_values.append(claim_measure)
             all_values.append(claim_outcome)
 
             if claim_measure not in results_map:
-                results_map[claim_measure] = {"count": 0, "outcomes": []}
+                results_map[claim_measure] = {
+                    Constants.COUNT_ATTR: 0, 
+                    Constants.OUTCOMES_ATTR: []
+                }
 
-            results_map[claim_measure]["count"] += 1
-            results_map[claim_measure]["outcomes"].append(claim_outcome)
+            results_map[claim_measure][Constants.COUNT_ATTR] += 1
+            results_map[claim_measure][Constants.OUTCOMES_ATTR].append(claim_outcome)
 
     return specs_map, results_map, all_values
 
@@ -176,8 +186,8 @@ def extract_answers(answers_directory: str, json_path: str):
                     extracted_claims, wrong_claims = extract_claims(txt_claims)
 
                     answers_data[article_id][table_idx] = {
-                        "extracted_claims": extracted_claims,
-                        "wrong_claims": wrong_claims
+                        Constants.EXTRACTED_CLAIMS_ATTR: extracted_claims,
+                        Constants.WRONG_CLAIMS_ATTR: wrong_claims
                     }
 
     with open(json_path, 'w') as json_file:

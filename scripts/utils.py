@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import re
 import difflib
+from scripts.constants import Constants
 
 
 def remove_unicodes(input_string):
@@ -112,7 +113,7 @@ def print_claim(claim):
         if isinstance(value, list):
             print(f"\t\t\t{yellow}{key}:{reset}")
             for item in value:
-                print(f"\t\t\t\t{orange}{item['name']}: {green}{item['value']},{reset}")
+                print(f"\t\t\t\t{orange}{item[Constants.NAME_ATTR]}: {green}{item[Constants.VALUE_ATTR]},{reset}")
         else:
             print(f"\t\t\t{yellow}{key}:{reset} {green}{value}{reset}")
     print("\n")
@@ -122,13 +123,13 @@ def print_table_claims(table_idx, claims, print_extracted=True, print_wrong=True
     print(f"\tTable Index: {table_idx}")
     if print_extracted:
         print("\t\tExtracted Claims:")
-        extracted_claims = claims['extracted_claims']
+        extracted_claims = claims[Constants.EXTRACTED_CLAIMS_ATTR]
         for claim in extracted_claims:
             print_claim(claim)
 
     if print_wrong:
         print("\t\tWrong Claims:")
-        for wrong_claim in claims['wrong_claims']:
+        for wrong_claim in claims[Constants.WRONG_CLAIMS_ATTR]:
             print(f"\t\t\t\033[91m{wrong_claim}\033[0m")
 
 
@@ -149,9 +150,9 @@ def print_claims(data, print_all=True, article_id=None, print_extracted=True, pr
 def print_specifications(specs_map):
     for spec_name, spec_info in specs_map.items():
         print(f"Specification: {spec_name}")
-        print(f"Count: {spec_info['count']}")
+        print(f"Count: {spec_info[Constants.COUNT_ATTR]}")
         print("Values:")
-        for value, count in spec_info['values'].items():
+        for value, count in spec_info[Constants.VALUES_ATTR].items():
             print(f"  {value}: {count}")
         print()
 
@@ -159,9 +160,9 @@ def print_specifications(specs_map):
 def print_results_map(results_map):
     for measure, measure_info in results_map.items():
         print(f"Measure: {measure}")
-        print(f"Total count: {measure_info['count']}")
+        print(f"Total count: {measure_info[Constants.COUNT_ATTR]}")
         print("Outcomes:")
-        for outcome in measure_info['outcomes']:
+        for outcome in measure_info[Constants.OUTCOMES_ATTR]:
             print(f"  {outcome}")
         print()
 

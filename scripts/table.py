@@ -1,6 +1,7 @@
 import json
 import os
 from scripts import utils
+from scripts.constants import Constants
 
 
 def load_tables_from_json(json_file):
@@ -15,7 +16,7 @@ def reset_processed_tables(json_file_path: str):
 
     for table_id, table_list in data.items():
         for table_data in table_list:
-            table_data['processed'] = False
+            table_data[Constants.PROCESSED_ATTR] = False
             num_tables += 1
 
     with open(json_file_path, 'w') as json_file:
@@ -42,7 +43,7 @@ def check_processed_tables(json_file_path: str, tables_directory_path: str):
             if article_id in data:
                 article = data[article_id]
                 if 0 <= table_index < len(article):
-                    article[table_index]['processed'] = True
+                    article[table_index][Constants.PROCESSED_ATTR] = True
                     tables_to_process -= 1
                     
 

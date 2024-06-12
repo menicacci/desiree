@@ -45,8 +45,8 @@ def wrong_claims_prc(data_dir: str):
 
     for article_id, tables_dict in extracted_claims.items():
         for table_id, table_dict in tables_dict.items():
-            correct_table_claims = table_dict['extracted_claims']
-            wrong_table_claims = table_dict['wrong_claims']
+            correct_table_claims = table_dict[Constants.EXTRACTED_CLAIMS_ATTR]
+            wrong_table_claims = table_dict[Constants.WRONG_CLAIMS_ATTR]
 
             table_crt = len(correct_table_claims)
             table_wrg = len(wrong_table_claims)
@@ -70,8 +70,8 @@ def evaluate_extracted_articles(tables_path: str, data_dir: str, use_embeddings:
     sim = Similarity(use_embeddings=use_embeddings)
     for article_id in extracted_claims.keys():
         for table_idx in extracted_claims[article_id].keys():
-            html_table = extracted_tables[article_id][table_idx]['table']
-            claim_dict = extracted_claims[article_id][table_idx]['extracted_claims']
+            html_table = extracted_tables[article_id][table_idx][Constants.TABLE_ATTR]
+            claim_dict = extracted_claims[article_id][table_idx][Constants.EXTRACTED_CLAIMS_ATTR]
 
             evaluation[f"{article_id}_{table_idx}"] = evaluate_table(sim, html_table, claim_dict)
 

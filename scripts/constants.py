@@ -9,6 +9,7 @@ class Constants:
     EXTRACTED_TABLE_DIR = f"extracted_tables"
     LLM_ANSWER_DIR = "answers"
     MESSAGES_DIR = "messages"
+    OUTPUT_DIR = "output"
 
     COUNT_ATTR = "count"
     EXTRACTED_CLAIMS_ATTR = "extracted_claims"

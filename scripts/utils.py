@@ -246,4 +246,29 @@ def show_key_group_colors(all_group_colors):
             colored_bar = print_colored_bar(color)
             print(f"{group}({colored_bar})", end="\t")
         print()
-        
+
+
+def plot_value_distribution(data):
+    values = [value for _, value in data]
+    
+    bins = np.arange(0, 1.05, 0.05)
+    
+    plt.figure(figsize=(12, 6))
+    plt.hist(
+        values, 
+        bins=bins, 
+        edgecolor='black', 
+        alpha=0.7, 
+        color='orange', 
+        histtype='bar', 
+        rwidth=0.95
+    )
+    
+    plt.title('Distribution of Coverage values')
+    plt.xlabel('Value')
+    plt.ylabel('Frequency')
+
+    plt.xticks(np.arange(0, 1.05, 0.05))
+    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+
+    plt.show()

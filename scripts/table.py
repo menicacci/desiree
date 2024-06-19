@@ -19,8 +19,7 @@ def reset_processed_tables(json_file_path: str):
             table_data[Constants.PROCESSED_ATTR] = False
             num_tables += 1
 
-    with open(json_file_path, 'w') as json_file:
-        json.dump(data, json_file, indent=4)
+    utils.write_json(data, json_file_path)
 
     return num_tables
 
@@ -46,8 +45,5 @@ def check_processed_tables(json_file_path: str, tables_directory_path: str):
                     article[table_index][Constants.PROCESSED_ATTR] = True
                     tables_to_process -= 1
                     
-
-    with open(json_file_path, 'w') as json_file:
-        json.dump(data, json_file, indent=4)
-
+    utils.write_json(data, json_file_path)
     return tables_to_process

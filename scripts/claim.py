@@ -1,8 +1,7 @@
 import re
 import os
-import json
 import pandas as pd
-from scripts.utils import remove_unicodes
+from scripts import utils
 from scripts.constants import Constants
 from io import StringIO
 
@@ -161,36 +160,65 @@ def get_table_values(html_table):
         table_values += get_non_null_values(pd_table)
 
     all_values = []
-    all_values.extend(remove_unicodes(str(value)) for value in table_values)
-    all_values.extend(remove_unicodes(str(value)) for value in column_names)
+    all_values.extend(utils.remove_unicodes(str(value)) for value in table_values)
+    all_values.extend(utils.remove_unicodes(str(value)) for value in column_names)
 
     return all_values, table
 
 
-def extract_answers(answers_directory: str, json_path: str):
-    answers_data = {}
+def extract_table_answers(file_path: str):
+    try:
+        with open(file_path, 'r') as file:
+            txt_claims = file.readlines()
 
+            extracted_claims, wrong_claims = extract_claims(txt_claims)
+
+            return {
+                Constants.EXTRACTED_CLAIMS_ATTR: extracted_claims,
+                Constants.WRONG_CLAIMS_ATTR: wrong_claims
+            }
+        
+    except FileNotFoundError:
+        return {}
+
+
+def extract_answers(answers_directory: str, json_path: str):
+    claims_extracted = utils.load_json(json_path)
+    
+    if claims_extracted is not None:
+        return claims_extracted
+
+    answers_data = {}
     for filename in os.listdir(answers_directory):
         if filename.endswith(".txt"):
             file_parts = filename.split("_")
             if len(file_parts) == 2:
                 article_id = file_parts[0]
                 table_idx = int(file_parts[1].split(".")[0])
-                filepath = os.path.join(answers_directory, filename)
-                with open(filepath, 'r') as file:
-                    if article_id not in answers_data:
-                        answers_data[article_id] = {}
+                file_path = os.path.join(answers_directory, filename)
 
-                    txt_claims = file.readlines()
+                if article_id not in answers_data:
+                    answers_data[article_id] = {}
 
-                    extracted_claims, wrong_claims = extract_claims(txt_claims)
+                answers_data[article_id][table_idx] = extract_table_answers(file_path)
 
-                    answers_data[article_id][table_idx] = {
-                        Constants.EXTRACTED_CLAIMS_ATTR: extracted_claims,
-                        Constants.WRONG_CLAIMS_ATTR: wrong_claims
-                    }
-
-    with open(json_path, 'w') as json_file:
-        json.dump(answers_data, json_file, indent=4)
-
+    utils.write_json(answers_data, json_path)
     return answers_data
+
+
+def check_claim_type(table_claims: dict) -> bool | None:
+    extracted_claims = table_claims.get(Constants.EXTRACTED_CLAIMS_ATTR, [])
+    wrong_claims = table_claims.get(Constants.WRONG_CLAIMS_ATTR, [])
+
+    total_extracted_claims = len(extracted_claims)
+    total_wrong_claims = len(wrong_claims)
+
+    if total_wrong_claims >= total_extracted_claims:
+        return None
+
+    data_claims_count = sum(
+        1 for claim in extracted_claims 
+        if claim.get(Constants.MEASURE_ATTR) is None and claim.get(Constants.OUTCOME_ATTR) is None
+    )
+
+    return data_claims_count < (total_extracted_claims / 2)

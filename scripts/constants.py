@@ -2,6 +2,7 @@
 class Constants:
 
     CLAIMS_FILENAME = 'claims.json'
+    RESULTS_FILENAME = "results.pkl"
     PROJECT_PATH = "$GITHUB_HOME/claim-extraction"
 
     ARTICLES_DIR = f"articles"
@@ -10,6 +11,7 @@ class Constants:
     LLM_ANSWER_DIR = "answers"
     MESSAGES_DIR = "messages"
     OUTPUT_DIR = "output"
+    GROUND_TRUTH_DIR = "ground_truth"
 
     COUNT_ATTR = "count"
     EXTRACTED_CLAIMS_ATTR = "extracted_claims"

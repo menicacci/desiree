@@ -77,8 +77,7 @@ def extract_tables_from_directory(dir_path):
 
 def save_tables_to_json(extracted_tables_map, output_file):
     filtered_tables_map = {article_id: tables for article_id, tables in extracted_tables_map.items() if tables}
-    with open(output_file, 'w') as json_file:
-        json.dump(filtered_tables_map, json_file, indent=4)
+    utils.write_json(filtered_tables_map, output_file)
 
 
 def extract_and_save_tables(articles_directory: str, save_path: str, file_name: str):

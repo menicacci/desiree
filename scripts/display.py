@@ -149,6 +149,13 @@ def show_key_group_colors(all_group_colors):
         print()
 
 
+def show_single_key_group_color(group_colors):
+    for key, color in group_colors.items():
+        colored_bar = print_colored_bar(color)
+        print(f"Article ID: {key}\t {colored_bar}")
+
+
+
 def plot_value_distribution(data, color="orange"):
     values = [value for _, value in data]
     
@@ -167,6 +174,14 @@ def plot_value_distribution(data, color="orange"):
         histtype='bar', 
         rwidth=0.95
     )
+
+    mean_value = np.mean(values)
+    median_value = np.median(values)
+
+    plt.axvline(mean_value, color='blue', linestyle='dashed', linewidth=1)
+    plt.axvline(median_value, color='green', linestyle='dashed', linewidth=1)
+    plt.text(mean_value + 0.005, 42, f'Mean: {mean_value:.2f}', color='blue')
+    plt.text(median_value + 0.005, 38, f'Median: {median_value:.2f}', color='green')
     
     plt.title('Distribution of Coverage values')
     plt.xlabel('Value')

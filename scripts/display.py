@@ -154,10 +154,13 @@ def plot_value_distribution(data, color="orange"):
     
     bins = np.arange(0, 1.05, 0.05)
     
+    weights = np.ones_like(values) / len(values)
+    
     plt.figure(figsize=(12, 6))
     plt.hist(
         values, 
         bins=bins, 
+        weights=weights * 100,
         edgecolor='black', 
         alpha=0.7, 
         color=color, 
@@ -167,9 +170,10 @@ def plot_value_distribution(data, color="orange"):
     
     plt.title('Distribution of Coverage values')
     plt.xlabel('Value')
-    plt.ylabel('Frequency')
+    plt.ylabel('Percentage')
 
     plt.xticks(np.arange(0, 1.05, 0.05))
+    plt.ylim(0, 45)
     plt.grid(True, which='both', linestyle='--', linewidth=0.5)
 
     plt.show()

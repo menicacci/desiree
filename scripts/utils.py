@@ -13,6 +13,10 @@ def remove_duplicates(input_list: list):
     return list(set(input_list))
 
 
+def remove_new_line(input_string: str, replace_car: str):
+    return input_string.replace("\n", replace_car)
+
+
 def check_path(path):
     if not os.path.exists(path):
         os.makedirs(path)
@@ -126,3 +130,12 @@ def load_list(file_path):
 def write_list(file_path: str, data: list):
     with open(file_path, 'wb') as file:
         pickle.dump(data, file)
+
+
+def read_html(html_file_path: str):
+    try:
+        with open(html_file_path, 'r', encoding='utf-8') as file:
+            return file.read()
+    except FileNotFoundError:
+        return None
+    

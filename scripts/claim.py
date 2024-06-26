@@ -55,8 +55,7 @@ def check_claim(claim: str):
                         Constants.OUTCOME_ATTR: outcome
                     }
 
-    else:
-        return None
+    return None
 
 
 def extract_claims(txt_claims: list):

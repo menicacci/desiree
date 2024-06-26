@@ -13,6 +13,8 @@ class Constants:
     OUTPUT_DIR = "output"
     GROUND_TRUTH_DIR = "ground_truth"
 
+    CAPTION_ATTR = "caption"
+    CITATIONS_ATTR = "citations"
     COUNT_ATTR = "count"
     EXTRACTED_CLAIMS_ATTR = "extracted_claims"
     MEASURE_ATTR = "measure"

@@ -1,8 +1,9 @@
 import os
-import json
 from bs4 import BeautifulSoup
 from scripts import utils
 from scripts.constants import Constants
+import copy
+
 
 def clean_element(element, to_del):
     for e in to_del:
@@ -41,25 +42,71 @@ def clean_html(element, remove_citations):
     return element
 
 
-def extract_tables_from_html(html_file_path, remove_citations=False):
-    with open(html_file_path, 'r', encoding='utf-8') as file:
-        html_content = file.read()
+def clean_extracted_string(extracted_string: str, replace_char=""):
+    return utils.remove_new_line(utils.remove_unicodes(extracted_string), replace_char)
 
-    soup = BeautifulSoup(html_content, 'html.parser')
-    tables = soup.find_all('figure', class_='ltx_table')
+
+def find_table_citations(html_soup, table):
+    citations = []
+
+    table_id = table.get('id')
+    if table_id:
+        paragraphs = html_soup.find_all('p', class_='ltx_p')
+        for p in paragraphs:
+            if p.find('a', href=f'#{table_id}'):
+                p_copy = copy.copy(p)
+
+                nested_figure = p_copy.find('figure', id=table_id)
+                if nested_figure:
+                    nested_figure.decompose()
+
+                citations.append(clean_extracted_string(p_copy.get_text(), " "))
+
+    return citations
+
+
+def get_table_caption(table):
+    caption = table.find('figcaption')
+    return clean_extracted_string(caption.get_text().strip(), " ") if caption else ''
+
+
+def extract_tables_from_html(html_file_path, remove_citations=False):
+    html_content = utils.read_html(html_file_path)
+    if html_content is None:
+        return []
+
+    html_soup = BeautifulSoup(html_content, 'html.parser')
+    tables = html_soup.find_all('figure', class_='ltx_table')
 
     extracted_tables = []
     for table in tables:
+        table_citations = find_table_citations(html_soup, table)
+        table_caption = get_table_caption(table)
+        
         clean_table = clean_html(table, remove_citations)
-
         table_string = str(clean_table)
-        table_string = table_string.replace('\n', '')
+        
         extracted_tables.append({
-            Constants.TABLE_ATTR: table_string, 
+            Constants.TABLE_ATTR: clean_extracted_string(table_string),
+            Constants.CITATIONS_ATTR: table_citations,
+            Constants.CAPTION_ATTR: table_caption,
             Constants.PROCESSED_ATTR: False
         })
 
     return extracted_tables
+
+
+def extract_table_caption_and_citations(html_file_path):
+    html_content = utils.read_html(html_file_path)
+    if html_content is None:
+        return []
+    
+    soup = BeautifulSoup(html_content, 'html.parser')
+    tables = soup.find_all('figure', class_='ltx_table')
+
+    return tables
+
+    
 
 
 def extract_tables_from_directory(dir_path):

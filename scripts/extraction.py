@@ -106,8 +106,6 @@ def extract_table_caption_and_citations(html_file_path):
 
     return tables
 
-    
-
 
 def extract_tables_from_directory(dir_path):
     extracted_tables_map = {}

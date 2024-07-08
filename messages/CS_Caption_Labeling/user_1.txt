@@ -1,0 +1,5 @@
+Label this table:
+
+CAPTION: Table 1: "Experimental results on CoNLL-2012 English test set"
+
+FIRST CITATION: "In Table 1, we compare our model with the previous state-of-the-art models. Here, we only compare single models without any ensemble for fairness. It can be observed that the HRN-ACC model with BERT pre-trained embeddings achieves the best performance in terms of all metrics. Especially compared to the model using a similar biaffine technique, but being trained in a supervised manner instead (i.e. using given labels for training instead of training the model through maximizing the expected rewards), HRN-ACC model generates a higher recall value since both the heuristic coreference rules sub-module and the actor-critic training technique can cover more stochastic mention patterns or antecedent links in test test, which are not exhibited in the training data"

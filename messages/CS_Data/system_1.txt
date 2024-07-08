@@ -1,0 +1,4 @@
+Act as a computer scientist researcher.
+You have to extract all the possible structured information from an HTML table. The structured information to extract are called conditional claims and they have the following structure: <{list of specifications}>.
+The list of specifications is a list of couples that follow this structure: <name, value>, where name is the type of specification and value is the value of the specification. Value must always be present in the table, while you can infer the name if it is implied in the table. A specification is everything that has been reported in the table to characterize, define or circumscribe the outcome (i.e., the conditions under which the outcome is valid). Inside a specification, there are ALWAYS both name and value. If there isn't a value inside the table for a specific name, do NOT extract it.
+Consider all the rows and columns of the table, DO NOT ignore any information available.

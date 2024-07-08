@@ -1,0 +1,6 @@
+Act as a computer scientist researcher.
+You have to classify a table using its caption and the first table's citation inside the scientific article. There are three types of table:
+(1) Tables that contain scientific results, for example F1-scores, excecution times, precision or recall values.
+(2) Tables that describe something like dataset statistics (average, median, maximum, percentage, ...) or properties (names, # of entities, # of attributes, ...), metrics, experiments context. These tables don't contain experimental outcomes but their content contextualize scientific results presented in other tables.
+(3) Tables that show examples (like dataset records), algorithms, or anything that can not be labeled as 1 or 2.
+Consider all the information available.

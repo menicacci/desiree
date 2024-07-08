@@ -22,6 +22,21 @@ def check_path(path):
         os.makedirs(path)
 
 
+def get_test_index(directory):
+    if not os.path.exists(directory):
+        raise ValueError(f"The directory '{directory}' does not exist.")
+    
+    dirs = [d for d in os.listdir(directory) if os.path.isdir(os.path.join(directory, d)) and d.isdigit()]
+    if not dirs:
+        return 1
+    else:
+        return max(map(int, dirs)) + 1
+    
+
+def get_test_path(path):
+    return os.path.join(path, str(get_test_index(path)))
+
+
 def divide_by_sum(a, b):
     a_float = float(a)
     b_float = float(b)

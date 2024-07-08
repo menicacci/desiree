@@ -39,13 +39,31 @@ def message(role, content) -> dict:
 def read_file(absolute_path):
     with open(absolute_path) as file:
         return file.read()
+    
+
+def replace_placeholder(content, placeholder, value):
+    placeholder = f"{placeholder}"
+    return content.replace(placeholder, value)
 
 
-def build_messages(file_name, messages_file_path, html_table, output_prompts_folder):
+def build_user_message(message_path, prompt_data, html_prompt):
+    content = read_file(message_path)
+
+    if html_prompt:
+        content = replace_placeholder(content, Constants.HTML_TABLE_ATTR, prompt_data)
+    else:
+        content = replace_placeholder(content, Constants.CAPTION_ATTR, prompt_data[Constants.CAPTION_ATTR])
+        content = replace_placeholder(content, Constants.CITATION_ATTR, prompt_data[Constants.CITATION_ATTR])
+    
+    return content
+        
+
+
+def build_messages(file_name, messages_file_path, prompt_data, output_prompts_folder, html_prompt):
     content_system_1 = read_file(messages_file_path['system_1'])
     content_user_1 = read_file(messages_file_path['user_1'])
     content_assistant = read_file(messages_file_path['assistant'])
-    content_user_2 = read_file(messages_file_path['user_2']) + '\n' + html_table
+    content_user_2 = build_user_message(messages_file_path['user_2'], prompt_data, html_prompt)
     content_system_2 = read_file(messages_file_path['system_2'])
 
     messages_dict = [
@@ -69,11 +87,11 @@ def build_messages(file_name, messages_file_path, html_table, output_prompts_fol
     return messages_dict, input_tokens
 
 
-def send_request(client, prompt: dict, max_tokens=16000):
+def send_request(client, prompt: dict, model="gpt-4-32k", max_tokens=16000):
     start_time = time.time()
 
     with client.chat.completions.with_streaming_response.create(
-            model="gpt-4-32k",
+            model=model,
             max_tokens=8000,
             temperature=0,
             stream=True,
@@ -128,12 +146,18 @@ def save_answer_and_stats(answer, input_tokens, output_tokens, request_time, str
     return
 
 
-def extract_claims(client, article_table, file_name, messages_file_paths, output_folder):
-    table_html = article_table[Constants.TABLE_ATTR].encode('ascii', 'ignore').decode()
+def extract_claims(client, article_table, file_name, messages_file_paths, output_folder, html_prompt=True):
+    if html_prompt:
+        prompt_data = article_table[Constants.TABLE_ATTR].encode('ascii', 'ignore').decode()
+    else:
+        prompt_data = {
+            Constants.CAPTION_ATTR: article_table[Constants.CAPTION_ATTR],
+            Constants.CITATION_ATTR: article_table[Constants.CITATIONS_ATTR][0] if len(article_table[Constants.CITATIONS_ATTR]) > 0 else ""
+        }
 
     output_prompts_folder = output_folder + '/prompts'
     utils.check_path(output_prompts_folder)
-    prompt, input_tokens = build_messages(file_name, messages_file_paths, table_html, output_prompts_folder)
+    prompt, input_tokens = build_messages(file_name, messages_file_paths, prompt_data, output_prompts_folder, html_prompt)
 
     print(f"Sending request for: [{file_name}]")
 
@@ -152,7 +176,7 @@ def extract_claims(client, article_table, file_name, messages_file_paths, output
     save_answer_and_stats(answer, input_tokens, output_tokens, request_time, stream, file_name, output_answers_folder)
 
 
-def run(connection_data: dict, messages_file_paths: dict, articles_tables: dict, output_path: str, num_threads: int):
+def run(connection_data: dict, messages_file_paths: dict, articles_tables: dict, output_path: str, num_threads: int, html_prompt=True):
     clients = [init_client(connection_data) for _ in range(num_threads)]
 
     original_prompt = f'''
@@ -177,7 +201,8 @@ def run(connection_data: dict, messages_file_paths: dict, articles_tables: dict,
                         article_table,
                         f"{article_id}_{index}",
                         messages_file_paths,
-                        output_path
+                        output_path,
+                        html_prompt
                     )
 
                     progress += 1

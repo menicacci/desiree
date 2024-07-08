@@ -14,9 +14,11 @@ class Constants:
     GROUND_TRUTH_DIR = "ground_truth"
 
     CAPTION_ATTR = "caption"
+    CITATION_ATTR = "citation"
     CITATIONS_ATTR = "citations"
     COUNT_ATTR = "count"
     EXTRACTED_CLAIMS_ATTR = "extracted_claims"
+    HTML_TABLE_ATTR = "html_table"
     MEASURE_ATTR = "measure"
     NAME_ATTR = "name"
     PROCESSED_ATTR = "processed"

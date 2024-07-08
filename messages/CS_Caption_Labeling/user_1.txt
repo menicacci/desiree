@@ -1,4 +1,4 @@
-Label this table:
+Classify this table:
 
 CAPTION: Table 1: "Experimental results on CoNLL-2012 English test set"
 

@@ -1,1 +1,5 @@
 Classify this table:
+
+CAPTION: Table 1: {caption}
+
+FIRST CITATION: {citation}

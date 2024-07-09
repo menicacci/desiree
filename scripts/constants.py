@@ -1,10 +1,11 @@
 
 class Constants:
 
-    CLAIMS_FILENAME = 'claims.json'
+    CLAIMS_FILENAME = "claims.json"
+    MSG_INFO_FILENAME = "msg_info.json"
     RESULTS_FILENAME = "results.pkl"
     PROJECT_PATH = "$GITHUB_HOME/claim-extraction"
-    TEST_INFO_PATH = "test_info.json"
+    TEST_INFO_FILENAME = "test_info.json"
 
     ARTICLES_DIR = f"articles"
     EXPERIMENTS_DIR = "experiments"

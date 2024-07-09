@@ -146,7 +146,7 @@ def save_answer_and_stats(answer, input_tokens, output_tokens, request_time, str
     return
 
 
-def set_up_test_dir(project_path: str, dir_name: str, tables_file: str, msgs_dir: dict, html_prompt: bool):
+def set_up_test_dir(project_path: str, dir_name: str, tables_file: str, msgs_dir: dict):
     experiments_path = os.path.join(project_path, Constants.EXPERIMENTS_DIR)
     
     output_path = os.path.join(experiments_path, Constants.OUTPUT_DIR, dir_name)
@@ -168,11 +168,11 @@ def set_up_test_dir(project_path: str, dir_name: str, tables_file: str, msgs_dir
     test_info = {}
 
     test_info[Constants.MESSAGES_PATH_ATTR] = msgs_file_path
-    test_info[Constants.HTML_TABLE_ATTR] = html_prompt
+    test_info[Constants.HTML_TABLE_ATTR] = utils.load_json(os.path.join(msgs_base_path, Constants.MSG_INFO_FILENAME))[Constants.HTML_TABLE_ATTR]
     test_info[Constants.TABLES_PATH_ATTR] = tables_file_path
     test_info[Constants.NUM_TABLE_ATTR] = table.reset_processed_tables(tables_file_path)    
 
-    utils.write_json(test_info, os.path.join(output_path, Constants.TEST_INFO_PATH))
+    utils.write_json(test_info, os.path.join(output_path, Constants.TEST_INFO_FILENAME))
 
 
 def get_test_info(project_path: str, dir_name):
@@ -182,7 +182,7 @@ def get_test_info(project_path: str, dir_name):
     if not utils.check_path(output_path):
         return None
     
-    test_info = utils.load_json(os.path.join(output_path, Constants.TEST_INFO_PATH))
+    test_info = utils.load_json(os.path.join(output_path, Constants.TEST_INFO_FILENAME))
     test_info[Constants.TEST_IDX_ATTR] = utils.get_test_path(output_path)
 
     return test_info
@@ -263,7 +263,14 @@ def run_test(connection_info: dict, test_info: dict, num_thread: int, max_cycles
     tables_to_process = 1000
     while tables_to_process > 0 and i < max_cycles:
         tables = table.load_tables_from_json(test_info[Constants.TABLES_PATH_ATTR])
-        run(connection_info, test_info[Constants.MESSAGES_PATH_ATTR], tables, test_info[Constants.TEST_IDX_ATTR], min(num_thread, tables_to_process), test_info[Constants.HTML_TABLE_ATTR])
+        run(
+            connection_info, 
+            messages_file_paths=test_info[Constants.MESSAGES_PATH_ATTR], 
+            articles_tables=tables, 
+            output_path=test_info[Constants.TEST_IDX_ATTR], 
+            num_threads=min(num_thread, tables_to_process), 
+            html_prompt=test_info[Constants.HTML_TABLE_ATTR]
+        )
 
         tables_to_process = table.check_processed_tables(test_info[Constants.TABLES_PATH_ATTR], os.path.join(test_info[Constants.TEST_IDX_ATTR], Constants.LLM_ANSWER_DIR))
         i += 1

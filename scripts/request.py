@@ -4,7 +4,7 @@ import json
 import time
 from openai.lib.azure import AzureOpenAI
 from requests.exceptions import ReadTimeout
-from scripts import utils
+from scripts import utils, table
 from scripts.constants import Constants
 import concurrent.futures
 
@@ -146,6 +146,48 @@ def save_answer_and_stats(answer, input_tokens, output_tokens, request_time, str
     return
 
 
+def set_up_test_dir(project_path: str, dir_name: str, tables_file: str, msgs_dir: dict, html_prompt: bool):
+    experiments_path = os.path.join(project_path, Constants.EXPERIMENTS_DIR)
+    
+    output_path = os.path.join(experiments_path, Constants.OUTPUT_DIR, dir_name)
+    if utils.check_path(output_path):
+        return
+
+    tables_file_path = os.path.join(experiments_path, Constants.EXTRACTED_TABLE_DIR, tables_file)
+    
+    msgs_base_path = os.path.join(project_path, Constants.MESSAGES_DIR, msgs_dir)
+
+    msgs_file_path = {
+        Constants.SYSTEM_1_ROLE:  f'{msgs_base_path}/{Constants.SYSTEM_1_ROLE}.txt',
+        Constants.SYSTEM_2_ROLE:  f'{msgs_base_path}/{Constants.SYSTEM_2_ROLE}.txt',
+        Constants.USER_1_ROLE:    f'{msgs_base_path}/{Constants.USER_1_ROLE}.txt',
+        Constants.USER_2_ROLE:    f'{msgs_base_path}/{Constants.USER_2_ROLE}.txt',
+        Constants.ASSISTANT_ROLE: f'{msgs_base_path}/{Constants.ASSISTANT_ROLE}.txt'
+    }
+
+    test_info = {}
+
+    test_info[Constants.MESSAGES_PATH_ATTR] = msgs_file_path
+    test_info[Constants.HTML_TABLE_ATTR] = html_prompt
+    test_info[Constants.TABLES_PATH_ATTR] = tables_file_path
+    test_info[Constants.NUM_TABLE_ATTR] = table.reset_processed_tables(tables_file_path)    
+
+    utils.write_json(test_info, os.path.join(output_path, Constants.TEST_INFO_PATH))
+
+
+def get_test_info(project_path: str, dir_name):
+    experiments_path = os.path.join(project_path, Constants.EXPERIMENTS_DIR)
+
+    output_path = os.path.join(experiments_path, Constants.OUTPUT_DIR, dir_name)
+    if not utils.check_path(output_path):
+        return None
+    
+    test_info = utils.load_json(os.path.join(output_path, Constants.TEST_INFO_PATH))
+    test_info[Constants.TEST_IDX_ATTR] = utils.get_test_path(output_path)
+
+    return test_info
+
+
 def extract_claims(client, article_table, file_name, messages_file_paths, output_folder, html_prompt=True):
     if html_prompt:
         prompt_data = article_table[Constants.TABLE_ATTR].encode('ascii', 'ignore').decode()
@@ -211,3 +253,23 @@ def run(connection_data: dict, messages_file_paths: dict, articles_tables: dict,
         client.close()
 
     return
+
+
+def run_test(connection_info: dict, test_info: dict, num_thread: int, max_cycles: int):
+    utils.check_path(test_info[Constants.TEST_IDX_ATTR])
+    table.reset_processed_tables(test_info[Constants.TABLES_PATH_ATTR])
+    
+    i = 0
+    tables_to_process = 1000
+    while tables_to_process > 0 and i < max_cycles:
+        tables = table.load_tables_from_json(test_info[Constants.TABLES_PATH_ATTR])
+        run(connection_info, test_info[Constants.MESSAGES_PATH_ATTR], tables, test_info[Constants.TEST_IDX_ATTR], min(num_thread, tables_to_process), test_info[Constants.HTML_TABLE_ATTR])
+
+        tables_to_process = table.check_processed_tables(test_info[Constants.TABLES_PATH_ATTR], os.path.join(test_info[Constants.TEST_IDX_ATTR], Constants.LLM_ANSWER_DIR))
+        i += 1
+    
+    return {
+        Constants.CYCLES_ATTR: i,
+        Constants.TABLES_TO_PROC_ATTR: tables_to_process
+    }
+    

@@ -20,6 +20,8 @@ def remove_new_line(input_string: str, replace_car: str):
 def check_path(path):
     if not os.path.exists(path):
         os.makedirs(path)
+        return False
+    return True
 
 
 def get_test_index(directory):

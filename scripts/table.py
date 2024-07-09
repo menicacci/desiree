@@ -20,7 +20,6 @@ def reset_processed_tables(json_file_path: str):
             num_tables += 1
 
     utils.write_json(data, json_file_path)
-
     return num_tables
 
 

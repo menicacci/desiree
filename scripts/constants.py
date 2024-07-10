@@ -48,16 +48,23 @@ class Constants:
 
     ARTICLE_ID_HEADER = "article_id"
     INPUT_TOKENS_HEADER = "input_tokens"
+    OUTPUT_HEADER = "output"
     OUTPUT_TOKENS_HEADER = "output_tokens"
     REQUEST_TIME_HEADER = "request_time"
     STREAM_HEADER = "stream"
     TABLE_IDX_HEADER = "table_idx"
 
-    HEADER_STRUCTURE = [
+    STATS_HEADER_STRUCTURE = [
         ARTICLE_ID_HEADER, 
         TABLE_IDX_HEADER, 
         INPUT_TOKENS_HEADER, 
         OUTPUT_TOKENS_HEADER, 
         REQUEST_TIME_HEADER, 
         STREAM_HEADER
+    ]
+
+    TYPE_HEADER_STRUCTURE = [
+        ARTICLE_ID_HEADER,
+        TABLE_IDX_HEADER,
+        OUTPUT_HEADER
     ]

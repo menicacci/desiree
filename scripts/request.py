@@ -144,7 +144,7 @@ def save_answer_and_stats(answer, input_tokens, output_tokens, request_time, str
     article_id, table_idx = utils.split_table_string(file_name)
 
     data_to_save = [article_id, table_idx, input_tokens, output_tokens, request_time, stream]
-    data_dict = {attr: val for attr, val in zip(Constants.HEADER_STRUCTURE, data_to_save)}
+    data_dict = {attr: val for attr, val in zip(Constants.STATS_HEADER_STRUCTURE, data_to_save)}
 
     stats_path = os.path.join(output_folder, Constants.STATS_DIR, file_name + ".json")
     utils.write_json(data_dict, stats_path)

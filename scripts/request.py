@@ -59,7 +59,7 @@ def build_user_message(message_path, prompt_data, html_prompt):
         
 
 
-def build_messages(file_name, messages_file_path, prompt_data, output_prompts_folder, html_prompt):
+def build_messages(messages_file_path, prompt_data, html_prompt):
     content_system_1 = read_file(messages_file_path['system_1'])
     content_user_1 = read_file(messages_file_path['user_1'])
     content_assistant = read_file(messages_file_path['assistant'])
@@ -73,12 +73,6 @@ def build_messages(file_name, messages_file_path, prompt_data, output_prompts_fo
         message("user", content_user_2),
         message("system", content_system_2)
     ]
-
-    # save prompt for replication purposes
-    file_name_txt = file_name + '.txt'
-    with open(os.path.join(output_prompts_folder, file_name_txt), "w") as text_file:
-        text_file.write(json.dumps(messages_dict))
-    print(f"\t Saved prompt at: {os.path.join(output_prompts_folder, file_name_txt)}")
 
     # number of input tokens
     input_tokens = num_tokens_from_string(
@@ -192,7 +186,7 @@ def get_test_info(project_path: str, dir_name):
     return test_info
 
 
-def extract_claims(client, article_table, file_name, messages_file_paths, output_folder, html_prompt=True):
+def build_prompt(article_table, messages_file_paths, html_prompt):
     if html_prompt:
         prompt_data = article_table[Constants.TABLE_ATTR].encode('ascii', 'ignore').decode()
     else:
@@ -201,12 +195,23 @@ def extract_claims(client, article_table, file_name, messages_file_paths, output
             Constants.CITATION_ATTR: article_table[Constants.CITATIONS_ATTR][0] if len(article_table[Constants.CITATIONS_ATTR]) > 0 else ""
         }
 
-    output_prompts_folder = output_folder + '/prompts'
-    utils.check_path(output_prompts_folder)
-    prompt, input_tokens = build_messages(file_name, messages_file_paths, prompt_data, output_prompts_folder, html_prompt)
+    return build_messages(messages_file_paths, prompt_data, html_prompt)
+
+
+def extract_claims(client, article_table, file_name, messages_file_paths, output_folder, html_prompt=True, save_prompt=True):
+    prompt, input_tokens = build_prompt(article_table, messages_file_paths, html_prompt)
+
+    if save_prompt:
+        # For replication purposes
+        output_prompts_folder = os.path.join(output_folder, Constants.OUTPUT_DIR)
+        utils.check_path(output_prompts_folder)
+
+        file_name_txt = file_name + '.txt'
+        with open(os.path.join(output_prompts_folder, file_name_txt), "w") as text_file:
+            text_file.write(json.dumps(prompt))
+        print(f"\t Saved prompt at: {os.path.join(output_prompts_folder, file_name_txt)}")
 
     print(f"Sending request for: [{file_name}]")
-
     for attempt in range(2):
         try:
             answer, output_tokens, request_time, stream = send_request(client, prompt)

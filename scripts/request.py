@@ -4,7 +4,7 @@ import json
 import time
 from openai.lib.azure import AzureOpenAI
 from requests.exceptions import ReadTimeout
-from scripts import utils, table
+from scripts import utils, table, stats
 from scripts.constants import Constants
 import concurrent.futures
 
@@ -128,22 +128,26 @@ def send_request(client, prompt: dict, model="gpt-4-32k", max_tokens=16000):
     return answer, output_tokens, request_time, stream
 
 
-def save_answer_and_stats(answer, input_tokens, output_tokens, request_time, stream, file_name, output_answers_folder):
+def save_answer_and_stats(answer, input_tokens, output_tokens, request_time, stream, file_name, output_folder):
     file_name_txt = file_name + '.txt'
-    with open(os.path.join(output_answers_folder, file_name_txt), "w") as text_file:
+
+    # Save answer
+    output_answers_folder = os.path.join(output_folder, Constants.LLM_ANSWER_DIR)
+    utils.check_path(output_answers_folder)
+    save_path = os.path.join(output_answers_folder, file_name_txt)
+
+    with open(save_path, "w") as text_file:
         text_file.write(answer.encode('ascii', 'ignore').decode())
-    print(f"\t Saved answer at: {os.path.join(output_answers_folder, file_name_txt)}")
+    print(f"\t Saved answer at: {save_path}")
 
-    '''
-    data_dict = {"file_name": file_name, "input_tokens": input_tokens, "output_tokens": output_tokens, "request_time": request_time, "stream": stream}
-    print(data_dict)
-    df = pd.DataFrame([data_dict])
-    with pd.ExcelWriter(os.path.join(output_stats_folder, stats_file), engine='openpyxl', if_sheet_exists="overlay", mode='a') as writer:
-        df.to_excel(writer, sheet_name='main', startrow=writer.sheets['main'].max_row, index=False, header=False)
+    # Save stats
+    article_id, table_idx = utils.split_table_string(file_name)
 
-    print(f"\t Saved stats at: {os.path.join(output_stats_folder, stats_file)}")
-    '''
-    return
+    data_to_save = [article_id, table_idx, input_tokens, output_tokens, request_time, stream]
+    data_dict = {attr: val for attr, val in zip(Constants.HEADER_STRUCTURE, data_to_save)}
+
+    stats_path = os.path.join(output_folder, Constants.STATS_DIR, file_name + ".json")
+    utils.write_json(data_dict, stats_path)
 
 
 def set_up_test_dir(project_path: str, dir_name: str, tables_file: str, msgs_dir: dict):
@@ -213,9 +217,7 @@ def extract_claims(client, article_table, file_name, messages_file_paths, output
         print("All retry attempts failed. Handle the error or raise it again.")
         return
 
-    output_answers_folder = output_folder + '/answers'
-    utils.check_path(output_answers_folder)
-    save_answer_and_stats(answer, input_tokens, output_tokens, request_time, stream, file_name, output_answers_folder)
+    save_answer_and_stats(answer, input_tokens, output_tokens, request_time, stream, file_name, output_folder)
 
 
 def run(connection_data: dict, messages_file_paths: dict, articles_tables: dict, output_path: str, num_threads: int, html_prompt=True):
@@ -256,7 +258,12 @@ def run(connection_data: dict, messages_file_paths: dict, articles_tables: dict,
 
 
 def run_test(connection_info: dict, test_info: dict, num_thread: int, max_cycles: int):
-    utils.check_path(test_info[Constants.TEST_IDX_ATTR])
+    test_dir = test_info[Constants.TEST_IDX_ATTR]
+    utils.check_path(test_dir)
+    
+    stats_dir = os.path.join(test_dir, Constants.STATS_DIR)
+    utils.check_path(stats_dir)
+
     table.reset_processed_tables(test_info[Constants.TABLES_PATH_ATTR])
     
     i = 0
@@ -274,6 +281,8 @@ def run_test(connection_info: dict, test_info: dict, num_thread: int, max_cycles
 
         tables_to_process = table.check_processed_tables(test_info[Constants.TABLES_PATH_ATTR], os.path.join(test_info[Constants.TEST_IDX_ATTR], Constants.LLM_ANSWER_DIR))
         i += 1
+
+    stats.save_stats(test_dir)
     
     return {
         Constants.CYCLES_ATTR: i,

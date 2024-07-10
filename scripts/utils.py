@@ -17,6 +17,14 @@ def remove_new_line(input_string: str, replace_car: str):
     return input_string.replace("\n", replace_car)
 
 
+def split_table_string(table_string: str):
+    file_parts = table_string.split("_")
+    article_id = file_parts[0]
+    table_idx = int(file_parts[1].split(".")[0])
+
+    return article_id, table_idx
+
+
 def check_path(path):
     if not os.path.exists(path):
         os.makedirs(path)

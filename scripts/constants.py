@@ -6,14 +6,16 @@ class Constants:
     RESULTS_FILENAME = "results.pkl"
     PROJECT_PATH = "$GITHUB_HOME/claim-extraction"
     TEST_INFO_FILENAME = "test_info.json"
+    STATS_FILENAME = "stats.xlsx"
 
     ARTICLES_DIR = f"articles"
     EXPERIMENTS_DIR = "experiments"
     EXTRACTED_TABLE_DIR = f"extracted_tables"
+    GROUND_TRUTH_DIR = "ground_truth"
     LLM_ANSWER_DIR = "answers"
     MESSAGES_DIR = "messages"
     OUTPUT_DIR = "output"
-    GROUND_TRUTH_DIR = "ground_truth"
+    STATS_DIR = "stats"
 
     CAPTION_ATTR = "caption"
     CITATION_ATTR = "citation"
@@ -43,3 +45,19 @@ class Constants:
     SYSTEM_2_ROLE = "system_2"
     USER_1_ROLE = "user_1"
     USER_2_ROLE = "user_2"
+
+    ARTICLE_ID_HEADER = "article_id"
+    INPUT_TOKENS_HEADER = "input_tokens"
+    OUTPUT_TOKENS_HEADER = "output_tokens"
+    REQUEST_TIME_HEADER = "request_time"
+    STREAM_HEADER = "stream"
+    TABLE_IDX_HEADER = "table_idx"
+
+    HEADER_STRUCTURE = [
+        ARTICLE_ID_HEADER, 
+        TABLE_IDX_HEADER, 
+        INPUT_TOKENS_HEADER, 
+        OUTPUT_TOKENS_HEADER, 
+        REQUEST_TIME_HEADER, 
+        STREAM_HEADER
+    ]

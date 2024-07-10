@@ -1,6 +1,9 @@
 import os
 from scripts import utils, claim
 from scripts.constants import Constants
+import openpyxl
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
 
 
 def get_claim_types(data_dir):
@@ -47,3 +50,37 @@ def wrong_claims_prc(data_dir: str):
             ovr_wrg += table_wrg
 
     return list(claims_correctness_prc.items()), utils.divide_by_sum(ovr_crt, ovr_wrg)
+
+
+def create_stats_file(file_path, headers):
+    workbook = Workbook()
+    sheet = workbook.active
+
+    for idx, header in enumerate(headers, start=1):
+        sheet.cell(row=1, column=idx, value=header)
+
+    workbook.save(file_path)
+
+
+def append_stat(file_path, data_dict):
+    workbook = openpyxl.load_workbook(file_path)
+    sheet = workbook.active
+
+    first_empty_row = sheet.max_row + 1
+
+    for idx, key in enumerate(data_dict.keys(), start=1):
+        sheet.cell(row=first_empty_row, column=idx, value=data_dict[key])
+
+    workbook.save(file_path)
+    
+
+def save_stats(dir: str):
+    stats_file_path = os.path.join(dir, Constants.STATS_FILENAME)
+    create_stats_file(stats_file_path, Constants.HEADER_STRUCTURE)
+
+    stats_dir = os.path.join(dir, Constants.STATS_DIR)
+    for file_name in os.listdir(stats_dir):
+        file_path = os.path.join(stats_dir, file_name)
+        file_stats = utils.load_json(file_path)
+
+        append_stat(stats_file_path, file_stats)

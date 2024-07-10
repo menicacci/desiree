@@ -3,6 +3,7 @@ import re
 import json
 import difflib
 import pickle
+import pandas as pd
 
 
 def remove_unicodes(input_string):
@@ -51,6 +52,10 @@ def divide_by_sum(a, b):
     a_float = float(a)
     b_float = float(b)
     return a_float / (a_float + b_float)
+
+
+def calculate_average(values):
+    return sum(values) / len(values) if values else float('nan')
 
 
 def get_json_file_name(query: str) -> str:
@@ -164,3 +169,21 @@ def read_html(html_file_path: str):
     except FileNotFoundError:
         return None
     
+
+def process_excel_column(file_path, column_name, function):
+    df = pd.read_excel(file_path)
+
+    if column_name not in df.columns:
+        raise ValueError(f"Column '{column_name}' does not exist in the Excel file.")
+    
+    column_values = df[column_name].tolist()
+    return function(column_values)
+
+
+def count_articles_dict_elems(article_dict: dict):
+    c = 0
+    for article_id, article_tables_dict in article_dict.items():
+        for table_idx, table_type in article_tables_dict.items():
+            c += 1
+
+    return c

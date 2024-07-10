@@ -112,27 +112,58 @@ def read_model_output(output_dir: str):
                 file_content = int(file.read().strip())
             
             if article_id not in results:
-                results[article_id] = []
-            results[article_id].append([int(table_idx), file_content])
-
-    results = {article_id: sorted(article_results) for article_id, article_results in results.items()}
-    results = {article_id: [table_result[1] for table_result in article_results] for article_id, article_results in results.items()}
+                results[article_id] = {}
+            results[article_id][int(table_idx)] = file_content
 
     return results
 
 
-def calculate_output_accuracy(gt_dict, outcome_dict):
-    total_elements = 0
+def calculate_output_accuracy(gt_dict, outcome_dict, check_correctness=lambda x, y: x == y):
+    common_elements = 0
     correct_elements = 0
     
-    for key in gt_dict:
-        gt_values = gt_dict[key]
-        oc_values = outcome_dict[key]
-        
-        for gt_val, oc_val in zip(gt_values, oc_values):
-            total_elements += 1
-            if gt_val == oc_val:
+    for article_id, article_tables_dict in gt_dict.items():
+        if article_id not in outcome_dict:
+            continue
+
+        for table_idx, table_type in article_tables_dict.items():
+            if table_idx not in outcome_dict[article_id]:
+                continue
+            
+            common_elements += 1
+            if check_correctness(table_type, outcome_dict[article_id][table_idx]):
                 correct_elements += 1
                 
-    accuracy_percentage = (correct_elements / total_elements) * 100
-    return accuracy_percentage
+    return common_elements, correct_elements
+
+
+def compare_results(gt_path: str, output_dirs: list[tuple[str, int]], save_json_path: str):
+    gt_result = read_model_output(gt_path)
+
+    output_paths = [os.path.join(dir, str(test_idx), Constants.LLM_ANSWER_DIR) for dir, test_idx in output_dirs]
+    results = [read_model_output(path) for path in output_paths]
+    
+    comparison = [calculate_output_accuracy(gt_result, result) for result in results]
+
+    stats_paths = [os.path.join(dir, str(test_idx), Constants.STATS_FILENAME) for dir, test_idx in output_dirs]
+    avg_input_tokens = [utils.process_excel_column(path, Constants.INPUT_TOKENS_HEADER, utils.calculate_average) for path in stats_paths]
+
+    dirs_data = [ 
+        {
+            "dir_name": output_dirs[i][0],
+            "test_idx": output_dirs[i][1],
+            "size": utils.count_articles_dict_elems(results[i]),
+            "common_elements_to_gt": comparison[i][0],
+            "correct_elements_to_gt": comparison[i][1],
+            "prc_correct": comparison[i][1]/comparison[i][0],
+            "avg_num_input_token": avg_input_tokens[i]
+        } for i in range(len(output_dirs))
+    ]
+
+    output = {
+        "gt_path": gt_path,
+        "gt_size": utils.count_articles_dict_elems(gt_result),
+        "dirs_data": dirs_data
+    }
+
+    utils.write_json(output, save_json_path)

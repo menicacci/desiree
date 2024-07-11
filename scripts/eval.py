@@ -37,8 +37,8 @@ def evaluate_table(sim: Similarity, html_table: str, claim_values: dict):
 
 
 def get_tables_and_claims(data_dir: str, tables_path: str):
-    model_answers_path = os.path.join(data_dir, Constants.LLM_ANSWER_DIR)
-    extracted_claims_path = os.path.join(data_dir, Constants.CLAIMS_FILENAME)
+    model_answers_path = os.path.join(data_dir, Constants.Directories.LLM_ANSWER)
+    extracted_claims_path = os.path.join(data_dir, Constants.Filenames.CLAIMS)
 
     extracted_claims = claim.extract_answers(model_answers_path, extracted_claims_path)
     extracted_tables = table.load_tables_from_json(tables_path)
@@ -47,14 +47,14 @@ def get_tables_and_claims(data_dir: str, tables_path: str):
 
 
 def get_table_and_claim(extracted_tables: dict, extracted_claims: dict, article_id: str, table_idx: str):
-    html_table = extracted_tables[article_id][int(table_idx)][Constants.TABLE_ATTR]
-    claim_dict = extracted_claims[article_id][table_idx][Constants.EXTRACTED_CLAIMS_ATTR]
+    html_table = extracted_tables[article_id][int(table_idx)][Constants.Attributes.TABLE]
+    claim_dict = extracted_claims[article_id][table_idx][Constants.Attributes.EXTRACTED_CLAIMS]
 
     return html_table, claim_dict
 
 
 def evaluate_extracted_articles(tables_path: str, data_dir: str, override: bool, use_embeddings: bool):
-    results_file_path = os.path.join(data_dir, Constants.RESULTS_FILENAME)
+    results_file_path = os.path.join(data_dir, Constants.Filenames.RESULTS)
     
     if not override:
         results = utils.load_list(results_file_path)

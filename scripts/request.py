@@ -50,10 +50,10 @@ def build_user_message(message_path, prompt_data, html_prompt):
     content = read_file(message_path)
 
     if html_prompt:
-        content = replace_placeholder(content, Constants.HTML_TABLE_ATTR, prompt_data)
+        content = replace_placeholder(content, Constants.Attributes.HTML_TABLE, prompt_data)
     else:
-        content = replace_placeholder(content, Constants.CAPTION_ATTR, prompt_data[Constants.CAPTION_ATTR])
-        content = replace_placeholder(content, Constants.CITATION_ATTR, prompt_data[Constants.CITATION_ATTR])
+        content = replace_placeholder(content, Constants.Attributes.CAPTION, prompt_data[Constants.Attributes.CAPTION])
+        content = replace_placeholder(content, Constants.Attributes.CITATION, prompt_data[Constants.Attributes.CITATION])
     
     return content
         
@@ -126,7 +126,7 @@ def save_answer_and_stats(answer, input_tokens, output_tokens, request_time, str
     file_name_txt = file_name + '.txt'
 
     # Save answer
-    output_answers_folder = os.path.join(output_folder, Constants.LLM_ANSWER_DIR)
+    output_answers_folder = os.path.join(output_folder, Constants.Directories.LLM_ANSWER)
     utils.check_path(output_answers_folder)
     save_path = os.path.join(output_answers_folder, file_name_txt)
 
@@ -138,61 +138,61 @@ def save_answer_and_stats(answer, input_tokens, output_tokens, request_time, str
     article_id, table_idx = utils.split_table_string(file_name)
 
     data_to_save = [article_id, table_idx, input_tokens, output_tokens, request_time, stream]
-    data_dict = {attr: val for attr, val in zip(Constants.STATS_HEADER_STRUCTURE, data_to_save)}
+    data_dict = {attr: val for attr, val in zip(Constants.ColumnHeaders.STATS_HEADER_STRUCTURE, data_to_save)}
 
-    stats_path = os.path.join(output_folder, Constants.STATS_DIR, file_name + ".json")
+    stats_path = os.path.join(output_folder, Constants.Directories.STATS, file_name + ".json")
     utils.write_json(data_dict, stats_path)
 
 
 def set_up_test_dir(project_path: str, dir_name: str, tables_file: str, msgs_dir: dict):
-    experiments_path = os.path.join(project_path, Constants.EXPERIMENTS_DIR)
+    experiments_path = os.path.join(project_path, Constants.Directories.EXPERIMENTS)
     
-    output_path = os.path.join(experiments_path, Constants.OUTPUT_DIR, dir_name)
+    output_path = os.path.join(experiments_path, Constants.Directories.OUTPUT, dir_name)
     if utils.check_path(output_path):
         return
 
-    tables_file_path = os.path.join(experiments_path, Constants.EXTRACTED_TABLE_DIR, tables_file)
+    tables_file_path = os.path.join(experiments_path, Constants.Directories.EXTRACTED_TABLE, tables_file)
     
-    msgs_base_path = os.path.join(project_path, Constants.MESSAGES_DIR, msgs_dir)
+    msgs_base_path = os.path.join(project_path, Constants.Directories.MESSAGES, msgs_dir)
 
     msgs_file_path = {
-        Constants.SYSTEM_1_ROLE:  f'{msgs_base_path}/{Constants.SYSTEM_1_ROLE}.txt',
-        Constants.SYSTEM_2_ROLE:  f'{msgs_base_path}/{Constants.SYSTEM_2_ROLE}.txt',
-        Constants.USER_1_ROLE:    f'{msgs_base_path}/{Constants.USER_1_ROLE}.txt',
-        Constants.USER_2_ROLE:    f'{msgs_base_path}/{Constants.USER_2_ROLE}.txt',
-        Constants.ASSISTANT_ROLE: f'{msgs_base_path}/{Constants.ASSISTANT_ROLE}.txt'
+        Constants.Roles.SYSTEM_1:  f'{msgs_base_path}/{Constants.Roles.SYSTEM_1}.txt',
+        Constants.Roles.SYSTEM_2:  f'{msgs_base_path}/{Constants.Roles.SYSTEM_2}.txt',
+        Constants.Roles.USER_1:    f'{msgs_base_path}/{Constants.Roles.USER_1}.txt',
+        Constants.Roles.USER_2:    f'{msgs_base_path}/{Constants.Roles.USER_2}.txt',
+        Constants.Roles.ASSISTANT: f'{msgs_base_path}/{Constants.Roles.ASSISTANT}.txt'
     }
 
     test_info = {}
 
-    test_info[Constants.MESSAGES_PATH_ATTR] = msgs_file_path
-    test_info[Constants.HTML_TABLE_ATTR] = utils.load_json(os.path.join(msgs_base_path, Constants.MSG_INFO_FILENAME))[Constants.HTML_TABLE_ATTR]
-    test_info[Constants.TABLES_PATH_ATTR] = tables_file_path
-    test_info[Constants.NUM_TABLE_ATTR] = table.reset_processed_tables(tables_file_path)    
+    test_info[Constants.Attributes.MESSAGES_PATH] = msgs_file_path
+    test_info[Constants.Attributes.HTML_TABLE] = utils.load_json(os.path.join(msgs_base_path, Constants.Filenames.MSG_INFO))[Constants.Attributes.HTML_TABLE]
+    test_info[Constants.Attributes.TABLES_PATH] = tables_file_path
+    test_info[Constants.Attributes.NUM_TABLE] = table.reset_processed_tables(tables_file_path)    
 
-    utils.write_json(test_info, os.path.join(output_path, Constants.TEST_INFO_FILENAME))
+    utils.write_json(test_info, os.path.join(output_path, Constants.Filenames.TEST_INFO))
 
 
 def get_test_info(project_path: str, dir_name):
-    experiments_path = os.path.join(project_path, Constants.EXPERIMENTS_DIR)
+    experiments_path = os.path.join(project_path, Constants.Directories.EXPERIMENTS)
 
-    output_path = os.path.join(experiments_path, Constants.OUTPUT_DIR, dir_name)
+    output_path = os.path.join(experiments_path, Constants.Directories.OUTPUT, dir_name)
     if not utils.check_path(output_path):
         return None
     
-    test_info = utils.load_json(os.path.join(output_path, Constants.TEST_INFO_FILENAME))
-    test_info[Constants.TEST_IDX_ATTR] = utils.get_test_path(output_path)
+    test_info = utils.load_json(os.path.join(output_path, Constants.Filenames.TEST_INFO))
+    test_info[Constants.Attributes.TEST_IDX] = utils.get_test_path(output_path)
 
     return test_info
 
 
 def build_prompt(article_table, messages_file_paths, html_prompt):
     if html_prompt:
-        prompt_data = article_table[Constants.TABLE_ATTR].encode('ascii', 'ignore').decode()
+        prompt_data = article_table[Constants.Attributes.TABLE].encode('ascii', 'ignore').decode()
     else:
         prompt_data = {
-            Constants.CAPTION_ATTR: article_table[Constants.CAPTION_ATTR],
-            Constants.CITATION_ATTR: article_table[Constants.CITATIONS_ATTR][0] if len(article_table[Constants.CITATIONS_ATTR]) > 0 else ""
+            Constants.Attributes.CAPTION: article_table[Constants.Attributes.CAPTION],
+            Constants.Attributes.CITATION: article_table[Constants.Attributes.CITATIONS][0] if len(article_table[Constants.Attributes.CITATIONS]) > 0 else ""
         }
 
     return build_messages(messages_file_paths, prompt_data, html_prompt)
@@ -203,7 +203,7 @@ def extract_claims(client, article_table, file_name, messages_file_paths, output
 
     if save_prompt:
         # For replication purposes
-        output_prompts_folder = os.path.join(output_folder, Constants.OUTPUT_DIR)
+        output_prompts_folder = os.path.join(output_folder, Constants.Directories.OUTPUT)
         utils.check_path(output_prompts_folder)
 
         file_name_txt = file_name + '.txt'
@@ -243,7 +243,7 @@ def run(connection_data: dict, messages_file_paths: dict, articles_tables: dict,
     with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
         for article_id, article_tables in articles_tables.items():
             for index, article_table in enumerate(article_tables):
-                if not article_table[Constants.PROCESSED_ATTR]:
+                if not article_table[Constants.Attributes.PROCESSED]:
                     executor.submit(
                         extract_claims,
                         clients[progress % num_threads],
@@ -263,34 +263,34 @@ def run(connection_data: dict, messages_file_paths: dict, articles_tables: dict,
 
 
 def run_test(connection_info: dict, test_info: dict, num_thread: int, max_cycles: int):
-    test_dir = test_info[Constants.TEST_IDX_ATTR]
+    test_dir = test_info[Constants.Attributes.TEST_IDX]
     utils.check_path(test_dir)
     
-    stats_dir = os.path.join(test_dir, Constants.STATS_DIR)
+    stats_dir = os.path.join(test_dir, Constants.Directories.STATS)
     utils.check_path(stats_dir)
 
-    table.reset_processed_tables(test_info[Constants.TABLES_PATH_ATTR])
+    table.reset_processed_tables(test_info[Constants.Attributes.TABLES_PATH])
     
     i = 0
     tables_to_process = 1000
     while tables_to_process > 0 and i < max_cycles:
-        tables = table.load_tables_from_json(test_info[Constants.TABLES_PATH_ATTR])
+        tables = table.load_tables_from_json(test_info[Constants.Attributes.TABLES_PATH])
         run(
             connection_info, 
-            messages_file_paths=test_info[Constants.MESSAGES_PATH_ATTR], 
+            messages_file_paths=test_info[Constants.Attributes.MESSAGES_PATH], 
             articles_tables=tables, 
-            output_path=test_info[Constants.TEST_IDX_ATTR], 
+            output_path=test_info[Constants.Attributes.TEST_IDX], 
             num_threads=min(num_thread, tables_to_process), 
-            html_prompt=test_info[Constants.HTML_TABLE_ATTR]
+            html_prompt=test_info[Constants.Attributes.HTML_TABLE]
         )
 
-        tables_to_process = table.check_processed_tables(test_info[Constants.TABLES_PATH_ATTR], os.path.join(test_info[Constants.TEST_IDX_ATTR], Constants.LLM_ANSWER_DIR))
+        tables_to_process = table.check_processed_tables(test_info[Constants.Attributes.TABLES_PATH], os.path.join(test_info[Constants.Attributes.TEST_IDX], Constants.Directories.LLM_ANSWER))
         i += 1
 
     stats.save_stats(test_dir)
     
     return {
-        Constants.CYCLES_ATTR: i,
-        Constants.TABLES_TO_PROC_ATTR: tables_to_process
+        Constants.Attributes.CYCLES: i,
+        Constants.Attributes.TABLES_TO_PROC: tables_to_process
     }
     

@@ -35,8 +35,8 @@ def check_claim(claim: str):
                             return None
 
                         specifications_values.append({
-                            Constants.NAME_ATTR: name_value[0], 
-                            Constants.VALUE_ATTR: name_value[1]
+                            Constants.Attributes.NAME: name_value[0], 
+                            Constants.Attributes.VALUE: name_value[1]
                         })
 
                     measure = None
@@ -50,9 +50,9 @@ def check_claim(claim: str):
                         outcome = measure_outcome[1]
 
                     return {
-                        Constants.SPECS_ATTR: specifications_values,
-                        Constants.MEASURE_ATTR: measure,
-                        Constants.OUTCOME_ATTR: outcome
+                        Constants.Attributes.SPECS: specifications_values,
+                        Constants.Attributes.MEASURE: measure,
+                        Constants.Attributes.OUTCOME: outcome
                     }
 
     return None
@@ -84,42 +84,42 @@ def count_specifications(table_claims):
     all_values = []
 
     for claim in table_claims:
-        for spec in claim[Constants.SPECS_ATTR]:
-            spec_name = spec[Constants.NAME_ATTR]
-            spec_value = spec[Constants.VALUE_ATTR]
+        for spec in claim[Constants.Attributes.SPECS]:
+            spec_name = spec[Constants.Attributes.NAME]
+            spec_value = spec[Constants.Attributes.VALUE]
 
             all_values.append(spec_value)
             all_values.append(spec_name)
 
             if spec_name not in specs_map:
                 specs_map[spec_name] = {
-                    Constants.COUNT_ATTR: 0, 
-                    Constants.VALUES_ATTR: {}
+                    Constants.Attributes.COUNT: 0, 
+                    Constants.Attributes.VALUES: {}
                 }
 
-            specs_map[spec_name][Constants.COUNT_ATTR] += 1
+            specs_map[spec_name][Constants.Attributes.COUNT] += 1
 
-            spec_values = specs_map[spec_name][Constants.VALUES_ATTR]
+            spec_values = specs_map[spec_name][Constants.Attributes.VALUES]
             if spec_value not in spec_values:
                 spec_values[spec_value] = 0
 
             spec_values[spec_value] += 1
 
-        if claim[Constants.MEASURE_ATTR] is not None and claim[Constants.OUTCOME_ATTR] is not None:
-            claim_measure = claim[Constants.MEASURE_ATTR]
-            claim_outcome = claim[Constants.OUTCOME_ATTR]
+        if claim[Constants.Attributes.MEASURE] is not None and claim[Constants.Attributes.OUTCOME] is not None:
+            claim_measure = claim[Constants.Attributes.MEASURE]
+            claim_outcome = claim[Constants.Attributes.OUTCOME]
 
             all_values.append(claim_measure)
             all_values.append(claim_outcome)
 
             if claim_measure not in results_map:
                 results_map[claim_measure] = {
-                    Constants.COUNT_ATTR: 0, 
-                    Constants.OUTCOMES_ATTR: []
+                    Constants.Attributes.COUNT: 0, 
+                    Constants.Attributes.OUTCOMES: []
                 }
 
-            results_map[claim_measure][Constants.COUNT_ATTR] += 1
-            results_map[claim_measure][Constants.OUTCOMES_ATTR].append(claim_outcome)
+            results_map[claim_measure][Constants.Attributes.COUNT] += 1
+            results_map[claim_measure][Constants.Attributes.OUTCOMES].append(claim_outcome)
 
     return specs_map, results_map, all_values
 
@@ -173,8 +173,8 @@ def extract_table_answers(file_path: str):
             extracted_claims, wrong_claims = extract_claims(txt_claims)
 
             return {
-                Constants.EXTRACTED_CLAIMS_ATTR: extracted_claims,
-                Constants.WRONG_CLAIMS_ATTR: wrong_claims
+                Constants.Attributes.EXTRACTED_CLAIMS: extracted_claims,
+                Constants.Attributes.WRONG_CLAIMS: wrong_claims
             }
         
     except FileNotFoundError:
@@ -206,8 +206,8 @@ def extract_answers(answers_directory: str, json_path: str):
 
 
 def check_claim_type(table_claims: dict) -> bool | None:
-    extracted_claims = table_claims.get(Constants.EXTRACTED_CLAIMS_ATTR, [])
-    wrong_claims = table_claims.get(Constants.WRONG_CLAIMS_ATTR, [])
+    extracted_claims = table_claims.get(Constants.Attributes.EXTRACTED_CLAIMS, [])
+    wrong_claims = table_claims.get(Constants.Attributes.WRONG_CLAIMS, [])
 
     total_extracted_claims = len(extracted_claims)
     total_wrong_claims = len(wrong_claims)
@@ -217,7 +217,7 @@ def check_claim_type(table_claims: dict) -> bool | None:
 
     data_claims_count = sum(
         1 for claim in extracted_claims 
-        if claim.get(Constants.MEASURE_ATTR) is None and claim.get(Constants.OUTCOME_ATTR) is None
+        if claim.get(Constants.Attributes.MEASURE) is None and claim.get(Constants.Attributes.OUTCOME) is None
     )
 
     return data_claims_count < (total_extracted_claims / 2)

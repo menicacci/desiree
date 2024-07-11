@@ -16,7 +16,7 @@ def reset_processed_tables(json_file_path: str):
 
     for table_id, table_list in data.items():
         for table_data in table_list:
-            table_data[Constants.PROCESSED_ATTR] = False
+            table_data[Constants.Attributes.PROCESSED] = False
             num_tables += 1
 
     utils.write_json(data, json_file_path)
@@ -41,7 +41,7 @@ def check_processed_tables(json_file_path: str, tables_directory_path: str):
             if article_id in data:
                 article = data[article_id]
                 if 0 <= table_index < len(article):
-                    article[table_index][Constants.PROCESSED_ATTR] = True
+                    article[table_index][Constants.Attributes.PROCESSED] = True
                     tables_to_process -= 1
                     
     utils.write_json(data, json_file_path)
@@ -52,26 +52,26 @@ def check_table_data(tables_file_path: str):
     tables_dict = utils.load_json(tables_file_path)
 
     data = {
-        Constants.SIZE_ATTR: 0,
-        Constants.NO_MISSING_ATTR: 0,
-        Constants.MISSING_CAPTION_ATTR: 0,
-        Constants.MISSING_CITATIONS_ATTR: 0,
-        Constants.MISSING_BOTH_ATTR: 0 
+        Constants.Attributes.SIZE: 0,
+        Constants.Attributes.NO_MISSING: 0,
+        Constants.Attributes.MISSING_CAPTION: 0,
+        Constants.Attributes.MISSING_CITATIONS: 0,
+        Constants.Attributes.MISSING_BOTH: 0 
     }
 
     condition_mapping = {
-        (True, True): Constants.NO_MISSING_ATTR,
-        (False, True): Constants.MISSING_CAPTION_ATTR,
-        (True, False): Constants.MISSING_CITATIONS_ATTR,
-        (False, False): Constants.MISSING_BOTH_ATTR
+        (True, True): Constants.Attributes.NO_MISSING,
+        (False, True): Constants.Attributes.MISSING_CAPTION,
+        (True, False): Constants.Attributes.MISSING_CITATIONS,
+        (False, False): Constants.Attributes.MISSING_BOTH
     }
 
     for _, article_data in tables_dict.items():
         for table_data in article_data:
-            data[Constants.SIZE_ATTR] += 1
+            data[Constants.Attributes.SIZE] += 1
 
-            has_caption = table_data[Constants.CAPTION_ATTR] != ""
-            has_citations = len(table_data[Constants.CITATIONS_ATTR]) > 0
+            has_caption = table_data[Constants.Attributes.CAPTION] != ""
+            has_citations = len(table_data[Constants.Attributes.CITATIONS]) > 0
 
             condition_key = (has_caption, has_citations)
             data[condition_mapping[condition_key]] += 1

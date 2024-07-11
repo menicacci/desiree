@@ -87,10 +87,10 @@ def extract_tables_from_html(html_file_path, remove_citations=False):
         table_string = str(clean_table)
         
         extracted_tables.append({
-            Constants.TABLE_ATTR: clean_extracted_string(table_string),
-            Constants.CITATIONS_ATTR: table_citations,
-            Constants.CAPTION_ATTR: table_caption,
-            Constants.PROCESSED_ATTR: False
+            Constants.Attributes.TABLE: clean_extracted_string(table_string),
+            Constants.Attributes.CITATIONS: table_citations,
+            Constants.Attributes.CAPTION: table_caption,
+            Constants.Attributes.PROCESSED: False
         })
 
     return extracted_tables

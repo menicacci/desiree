@@ -8,7 +8,7 @@ from openpyxl.utils import get_column_letter
 
 
 def get_claim_types(data_dir):
-    claims_path = os.path.join(data_dir, Constants.CLAIMS_FILENAME)
+    claims_path = os.path.join(data_dir, Constants.Filenames.CLAIMS)
     extracted_claims = utils.load_json(claims_path)
 
     data_claims, outcome_claims, wrong_claims = [], [], []
@@ -29,8 +29,8 @@ def get_claim_types(data_dir):
 
 
 def wrong_claims_prc(data_dir: str):
-    model_answers_path = os.path.join(data_dir, Constants.LLM_ANSWER_DIR)
-    extracted_claims_path = os.path.join(data_dir, Constants.CLAIMS_FILENAME)
+    model_answers_path = os.path.join(data_dir, Constants.Directories.LLM_ANSWER)
+    extracted_claims_path = os.path.join(data_dir, Constants.Filenames.CLAIMS)
     extracted_claims = claim.extract_answers(model_answers_path, extracted_claims_path)
 
     claims_correctness_prc = {}
@@ -39,8 +39,8 @@ def wrong_claims_prc(data_dir: str):
 
     for article_id, tables_dict in extracted_claims.items():
         for table_id, table_dict in tables_dict.items():
-            correct_table_claims = table_dict[Constants.EXTRACTED_CLAIMS_ATTR]
-            wrong_table_claims = table_dict[Constants.WRONG_CLAIMS_ATTR]
+            correct_table_claims = table_dict[Constants.Attributes.EXTRACTED_CLAIMS]
+            wrong_table_claims = table_dict[Constants.Attributes.WRONG_CLAIMS]
 
             table_crt = len(correct_table_claims)
             table_wrg = len(wrong_table_claims)
@@ -76,10 +76,10 @@ def append_stat(file_path, data_dict):
     
 
 def save_stats(dir: str):
-    stats_file_path = os.path.join(dir, Constants.STATS_FILENAME)
-    create_stats_file(stats_file_path, Constants.STATS_HEADER_STRUCTURE)
+    stats_file_path = os.path.join(dir, Constants.Filenames.STATS)
+    create_stats_file(stats_file_path, Constants.ColumnHeaders.STATS_HEADER_STRUCTURE)
 
-    stats_dir = os.path.join(dir, Constants.STATS_DIR)
+    stats_dir = os.path.join(dir, Constants.Directories.STATS)
     for file_name in os.listdir(stats_dir):
         file_path = os.path.join(stats_dir, file_name)
         file_stats = utils.load_json(file_path)
@@ -90,9 +90,9 @@ def save_stats(dir: str):
 def write_ground_truth(gt_file_path: str, output_dir: str):
     utils.check_path(output_dir)
 
-    data = pd.read_excel(gt_file_path, engine='odf', dtype={h: str for h in Constants.TYPE_HEADER_STRUCTURE})
+    data = pd.read_excel(gt_file_path, engine='odf', dtype={h: str for h in Constants.ColumnHeaders.TYPE_HEADER_STRUCTURE})
     for _, row in data.iterrows():
-        article_id, table_idx, table_type = [row[header_attr] for header_attr in Constants.TYPE_HEADER_STRUCTURE]
+        article_id, table_idx, table_type = [row[header_attr] for header_attr in Constants.ColumnHeaders.TYPE_HEADER_STRUCTURE]
 
         file_name = f"{article_id}_{table_idx}.txt"
         file_content = str(table_type)
@@ -140,30 +140,30 @@ def calculate_output_accuracy(gt_dict, outcome_dict, check_correctness=lambda x,
 def compare_results(gt_path: str, output_dirs: list[tuple[str, int]], save_json_path: str):
     gt_result = read_model_output(gt_path)
 
-    output_paths = [os.path.join(dir, str(test_idx), Constants.LLM_ANSWER_DIR) for dir, test_idx in output_dirs]
+    output_paths = [os.path.join(dir, str(test_idx), Constants.Directories.LLM_ANSWER) for dir, test_idx in output_dirs]
     results = [read_model_output(path) for path in output_paths]
     
     comparison = [calculate_output_accuracy(gt_result, result) for result in results]
 
-    stats_paths = [os.path.join(dir, str(test_idx), Constants.STATS_FILENAME) for dir, test_idx in output_dirs]
-    avg_input_tokens = [utils.process_excel_column(path, Constants.INPUT_TOKENS_HEADER, utils.calculate_average) for path in stats_paths]
+    stats_paths = [os.path.join(dir, str(test_idx), Constants.Filenames.STATS) for dir, test_idx in output_dirs]
+    avg_input_tokens = [utils.process_excel_column(path, Constants.ColumnHeaders.INPUT_TOKENS, utils.calculate_average) for path in stats_paths]
 
     dirs_data = [ 
         {
-            Constants.DIRECTORY_ATTR: output_dirs[i][0],
-            Constants.TEST_IDX_ATTR: output_dirs[i][1],
-            Constants.SIZE_ATTR: utils.count_articles_dict_elems(results[i]),
-            Constants.COMMON_ELEMENTS_ATTR: comparison[i][0],
-            Constants.CORRECT_ELEMENTS_ATTR: comparison[i][1],
-            Constants.PRC_CORRECT_ATTR: comparison[i][1]/comparison[i][0],
-            Constants.AVG_NUM_INPUT_TOKEN_ATTR: avg_input_tokens[i]
+            Constants.Attributes.DIRECTORY: output_dirs[i][0],
+            Constants.Attributes.TEST_IDX: output_dirs[i][1],
+            Constants.Attributes.SIZE: utils.count_articles_dict_elems(results[i]),
+            Constants.Attributes.COMMON_ELEMENTS: comparison[i][0],
+            Constants.Attributes.CORRECT_ELEMENTS: comparison[i][1],
+            Constants.Attributes.PRC_CORRECT: comparison[i][1]/comparison[i][0],
+            Constants.Attributes.AVG_NUM_INPUT_TOKEN: avg_input_tokens[i]
         } for i in range(len(output_dirs))
     ]
 
     output = {
-        Constants.GT_PATH_ATTR: gt_path,
-        Constants.SIZE_ATTR: utils.count_articles_dict_elems(gt_result),
-        Constants.TEST_DATA_ATTR: dirs_data
+        Constants.Attributes.GT_PATH: gt_path,
+        Constants.Attributes.SIZE: utils.count_articles_dict_elems(gt_result),
+        Constants.Attributes.TEST_DATA: dirs_data
     }
 
     utils.write_json(output, save_json_path)

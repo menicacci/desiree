@@ -13,7 +13,7 @@ def print_claim(claim):
         if isinstance(value, list):
             print(f"\t\t\t{yellow}{key}:{reset}")
             for item in value:
-                print(f"\t\t\t\t{orange}{item[Constants.NAME_ATTR]}: {green}{item[Constants.VALUE_ATTR]},{reset}")
+                print(f"\t\t\t\t{orange}{item[Constants.Attributes.NAME]}: {green}{item[Constants.Attributes.VALUE]},{reset}")
         else:
             print(f"\t\t\t{yellow}{key}:{reset} {green}{value}{reset}")
     print("\n")
@@ -23,13 +23,13 @@ def print_table_claims(table_idx, claims, print_extracted=True, print_wrong=True
     print(f"\tTable Index: {table_idx}")
     if print_extracted:
         print("\t\tExtracted Claims:")
-        extracted_claims = claims[Constants.EXTRACTED_CLAIMS_ATTR]
+        extracted_claims = claims[Constants.Attributes.EXTRACTED_CLAIMS]
         for claim in extracted_claims:
             print_claim(claim)
 
     if print_wrong:
         print("\t\tWrong Claims:")
-        for wrong_claim in claims[Constants.WRONG_CLAIMS_ATTR]:
+        for wrong_claim in claims[Constants.Attributes.WRONG_CLAIMS]:
             print(f"\t\t\t\033[91m{wrong_claim}\033[0m")
 
 
@@ -50,9 +50,9 @@ def print_claims(data, print_all=True, article_id=None, print_extracted=True, pr
 def print_specifications(specs_map):
     for spec_name, spec_info in specs_map.items():
         print(f"Specification: {spec_name}")
-        print(f"Count: {spec_info[Constants.COUNT_ATTR]}")
+        print(f"Count: {spec_info[Constants.Attributes.COUNT]}")
         print("Values:")
-        for value, count in spec_info[Constants.VALUES_ATTR].items():
+        for value, count in spec_info[Constants.Attributes.VALUES].items():
             print(f"  {value}: {count}")
         print()
 
@@ -60,9 +60,9 @@ def print_specifications(specs_map):
 def print_results_map(results_map):
     for measure, measure_info in results_map.items():
         print(f"Measure: {measure}")
-        print(f"Total count: {measure_info[Constants.COUNT_ATTR]}")
+        print(f"Total count: {measure_info[Constants.Attributes.COUNT]}")
         print("Outcomes:")
-        for outcome in measure_info[Constants.OUTCOMES_ATTR]:
+        for outcome in measure_info[Constants.Attributes.OUTCOMES]:
             print(f"  {outcome}")
         print()
 

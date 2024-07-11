@@ -1,83 +1,88 @@
 
 class Constants:
 
-    CLAIMS_FILENAME = "claims.json"
-    MSG_INFO_FILENAME = "msg_info.json"
-    RESULTS_FILENAME = "results.pkl"
     PROJECT_PATH = "$GITHUB_HOME/claim-extraction"
-    TEST_INFO_FILENAME = "test_info.json"
-    STATS_FILENAME = "stats.xlsx"
 
-    ARTICLES_DIR = f"articles"
-    EXPERIMENTS_DIR = "experiments"
-    EXTRACTED_TABLE_DIR = f"extracted_tables"
-    GROUND_TRUTH_DIR = "ground_truth"
-    LLM_ANSWER_DIR = "answers"
-    MESSAGES_DIR = "messages"
-    OUTPUT_DIR = "output"
-    STATS_DIR = "stats"
+    class Filenames:
+        CLAIMS = "claims.json"    
+        MSG_INFO = "msg_info.json"
+        RESULTS = "results.pkl"
+        TEST_INFO = "test_info.json"
+        STATS = "stats.xlsx"
 
-    AVG_NUM_INPUT_TOKEN_ATTR = "avg_num_input_token"
-    CAPTION_ATTR = "caption"
-    CITATION_ATTR = "citation"
-    CITATIONS_ATTR = "citations"
-    COMMON_ELEMENTS_ATTR = "common_elements"
-    CORRECT_ELEMENTS_ATTR = "correct_elements"
-    CYCLES_ATTR = "num_cycles"
-    COUNT_ATTR = "count"
-    DIRECTORY_ATTR = "dir"
-    EXTRACTED_CLAIMS_ATTR = "extracted_claims"
-    GT_PATH_ATTR = "gt_path"
-    HTML_TABLE_ATTR = "html_table"
-    MEASURE_ATTR = "measure"
-    MESSAGES_PATH_ATTR = "messages_path"
-    MISSING_CAPTION_ATTR = "missing_caption"
-    MISSING_BOTH_ATTR = "missing_both"
-    MISSING_CITATIONS_ATTR = "missing_citations"
-    NAME_ATTR = "name"
-    NO_MISSING_ATTR = "no_missing_attr"
-    NUM_TABLE_ATTR = "num_tables"
-    PROCESSED_ATTR = "processed"
-    OUTCOME_ATTR = "outcome"
-    OUTCOMES_ATTR = "outcomes"
-    PRC_CORRECT_ATTR = "prc_correct"
-    SIZE_ATTR = "size"
-    SPECS_ATTR = "specifications"
-    TABLE_ATTR = "table"
-    TABLES_PATH_ATTR = "tables_path"
-    TABLES_TO_PROC_ATTR = "table_to_process"
-    TEST_DATA_ATTR = "test_data"
-    TEST_IDX_ATTR = "test_idx"
-    WRONG_CLAIMS_ATTR = "wrong_claims"
-    VALUE_ATTR = "value"
-    VALUES_ATTR = "values"
+    class Directories:
+        ARTICLES = f"articles"
+        EXPERIMENTS = "experiments"
+        EXTRACTED_TABLE = f"extracted_tables"
+        GROUND_TRUTH = "ground_truth"
+        LLM_ANSWER = "answers"
+        MESSAGES = "messages"
+        OUTPUT = "output"
+        STATS = "stats"
+
+    class Attributes:
+        AVG_NUM_INPUT_TOKEN = "avg_num_input_token"
+        CAPTION = "caption"
+        CITATION = "citation"
+        CITATIONS = "citations"
+        COMMON_ELEMENTS = "common_elements"
+        CORRECT_ELEMENTS = "correct_elements"
+        CYCLES = "num_cycles"
+        COUNT = "count"
+        DIRECTORY = "dir"
+        EXTRACTED_CLAIMS = "extracted_claims"
+        GT_PATH = "gt_path"
+        HTML_TABLE = "html_table"
+        MEASURE = "measure"
+        MESSAGES_PATH = "messages_path"
+        MISSING_CAPTION = "missing_caption"
+        MISSING_BOTH = "missing_both"
+        MISSING_CITATIONS = "missing_citations"
+        NAME = "name"
+        NO_MISSING = "no_missing_attr"
+        NUM_TABLE = "num_tables"
+        PROCESSED = "processed"
+        OUTCOME = "outcome"
+        OUTCOMES = "outcomes"
+        PRC_CORRECT = "prc_correct"
+        SIZE = "size"
+        SPECS = "specifications"
+        TABLE = "table"
+        TABLES_PATH = "tables_path"
+        TABLES_TO_PROC = "table_to_process"
+        TEST_DATA = "test_data"
+        TEST_IDX = "test_idx"
+        WRONG_CLAIMS = "wrong_claims"
+        VALUE = "value"
+        VALUES = "values"
     
-    ASSISTANT_ROLE = "assistant"
-    SYSTEM_1_ROLE = "system_1"
-    SYSTEM_2_ROLE = "system_2"
-    USER_1_ROLE = "user_1"
-    USER_2_ROLE = "user_2"
+    class Roles:
+        ASSISTANT = "assistant"
+        SYSTEM_1 = "system_1"
+        SYSTEM_2 = "system_2"
+        USER_1 = "user_1"
+        USER_2 = "user_2"
 
-    ARTICLE_ID_HEADER = "article_id"
-    INPUT_TOKENS_HEADER = "input_tokens"
-    OUTPUT_HEADER = "output"
-    OUTPUT_TOKENS_HEADER = "output_tokens"
-    REQUEST_TIME_HEADER = "request_time"
-    STREAM_HEADER = "stream"
-    TABLE_IDX_HEADER = "table_idx"
+    class ColumnHeaders:
+        ARTICLE_ID = "article_id"
+        INPUT_TOKENS = "input_tokens"
+        OUTPUT = "output"
+        OUTPUT_TOKENS = "output_tokens"
+        REQUEST_TIME = "request_time"
+        STREAM = "stream"
+        TABLE_IDX = "table_idx"
 
-    STATS_HEADER_STRUCTURE = [
-        ARTICLE_ID_HEADER, 
-        TABLE_IDX_HEADER, 
-        INPUT_TOKENS_HEADER, 
-        OUTPUT_TOKENS_HEADER, 
-        REQUEST_TIME_HEADER, 
-        STREAM_HEADER
-    ]
+        STATS_HEADER_STRUCTURE = (
+            ARTICLE_ID, 
+            TABLE_IDX, 
+            INPUT_TOKENS, 
+            OUTPUT_TOKENS, 
+            REQUEST_TIME, 
+            STREAM
+        )
 
-    TYPE_HEADER_STRUCTURE = [
-        ARTICLE_ID_HEADER,
-        TABLE_IDX_HEADER,
-        OUTPUT_HEADER
-    ]
-    
+        TYPE_HEADER_STRUCTURE = (
+            ARTICLE_ID,
+            TABLE_IDX,
+            OUTPUT
+        )

@@ -46,3 +46,34 @@ def check_processed_tables(json_file_path: str, tables_directory_path: str):
                     
     utils.write_json(data, json_file_path)
     return tables_to_process
+
+
+def check_table_data(tables_file_path: str):
+    tables_dict = utils.load_json(tables_file_path)
+
+    data = {
+        Constants.SIZE_ATTR: 0,
+        Constants.NO_MISSING_ATTR: 0,
+        Constants.MISSING_CAPTION_ATTR: 0,
+        Constants.MISSING_CITATIONS_ATTR: 0,
+        Constants.MISSING_BOTH_ATTR: 0 
+    }
+
+    condition_mapping = {
+        (True, True): Constants.NO_MISSING_ATTR,
+        (False, True): Constants.MISSING_CAPTION_ATTR,
+        (True, False): Constants.MISSING_CITATIONS_ATTR,
+        (False, False): Constants.MISSING_BOTH_ATTR
+    }
+
+    for _, article_data in tables_dict.items():
+        for table_data in article_data:
+            data[Constants.SIZE_ATTR] += 1
+
+            has_caption = table_data[Constants.CAPTION_ATTR] != ""
+            has_citations = len(table_data[Constants.CITATIONS_ATTR]) > 0
+
+            condition_key = (has_caption, has_citations)
+            data[condition_mapping[condition_key]] += 1
+
+    return data

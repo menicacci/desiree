@@ -87,10 +87,10 @@ def save_stats(dir: str):
         append_stat(stats_file_path, file_stats)
 
 
-def write_ground_truth(gt_path: str, output_dir: str):
+def write_ground_truth(gt_file_path: str, output_dir: str):
     utils.check_path(output_dir)
 
-    data = pd.read_excel(gt_path, engine='odf', dtype={h: str for h in Constants.TYPE_HEADER_STRUCTURE})
+    data = pd.read_excel(gt_file_path, engine='odf', dtype={h: str for h in Constants.TYPE_HEADER_STRUCTURE})
     for _, row in data.iterrows():
         article_id, table_idx, table_type = [row[header_attr] for header_attr in Constants.TYPE_HEADER_STRUCTURE]
 
@@ -150,20 +150,20 @@ def compare_results(gt_path: str, output_dirs: list[tuple[str, int]], save_json_
 
     dirs_data = [ 
         {
-            "dir_name": output_dirs[i][0],
-            "test_idx": output_dirs[i][1],
-            "size": utils.count_articles_dict_elems(results[i]),
-            "common_elements_to_gt": comparison[i][0],
-            "correct_elements_to_gt": comparison[i][1],
-            "prc_correct": comparison[i][1]/comparison[i][0],
-            "avg_num_input_token": avg_input_tokens[i]
+            Constants.DIRECTORY_ATTR: output_dirs[i][0],
+            Constants.TEST_IDX_ATTR: output_dirs[i][1],
+            Constants.SIZE_ATTR: utils.count_articles_dict_elems(results[i]),
+            Constants.COMMON_ELEMENTS_ATTR: comparison[i][0],
+            Constants.CORRECT_ELEMENTS_ATTR: comparison[i][1],
+            Constants.PRC_CORRECT_ATTR: comparison[i][1]/comparison[i][0],
+            Constants.AVG_NUM_INPUT_TOKEN_ATTR: avg_input_tokens[i]
         } for i in range(len(output_dirs))
     ]
 
     output = {
-        "gt_path": gt_path,
-        "gt_size": utils.count_articles_dict_elems(gt_result),
-        "dirs_data": dirs_data
+        Constants.GT_PATH_ATTR: gt_path,
+        Constants.SIZE_ATTR: utils.count_articles_dict_elems(gt_result),
+        Constants.TEST_DATA_ATTR: dirs_data
     }
 
     utils.write_json(output, save_json_path)

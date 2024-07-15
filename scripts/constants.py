@@ -7,6 +7,7 @@ class Constants:
         CLAIMS = "claims.json"    
         MSG_INFO = "msg_info.json"
         RESULTS = "results.pkl"
+        PROMPT = "prompt.txt"
         TEST_INFO = "test_info.json"
         STATS = "stats.xlsx"
 
@@ -19,6 +20,7 @@ class Constants:
         MESSAGES = "messages"
         OUTPUT = "output"
         STATS = "stats"
+        TEMP = "temp"
 
     class Attributes:
         AVG_NUM_INPUT_TOKEN = "avg_num_input_token"
@@ -49,6 +51,7 @@ class Constants:
         SPECS = "specifications"
         TABLE = "table"
         TABLES_PATH = "tables_path"
+        TABLE_PROC = "table_processed"
         TABLES_TO_PROC = "table_to_process"
         TEST_DATA = "test_data"
         TEST_IDX = "test_idx"

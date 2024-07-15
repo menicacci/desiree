@@ -1,12 +1,12 @@
 import os
 import json
-from scripts import request as ru
+from scripts import request as ru, prompt
 
 
 def build_messages(file_name: str, output_prompts_folder: str, instructions: str, request: str):
     messages_dict = [
-        ru.message("system", instructions),
-        ru.message("user", request)
+        prompt.message("system", instructions),
+        prompt.message("user", request)
     ]
 
     file_name_txt = file_name + '.txt'
@@ -14,7 +14,7 @@ def build_messages(file_name: str, output_prompts_folder: str, instructions: str
         text_file.write(json.dumps(messages_dict))
     print(f"\t Saved prompt at: {os.path.join(output_prompts_folder, file_name_txt)}")
 
-    input_tokens = ru.num_tokens_from_string(instructions + request)
+    input_tokens = prompt.num_tokens_from_string(instructions + request)
 
     return messages_dict, input_tokens
 

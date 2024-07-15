@@ -140,3 +140,33 @@ def extract_and_save_tables(articles_directory: str, save_path: str, file_name: 
 
     save_tables_to_json(articles_tables_map, file_name)
     
+
+def check_extracted_data(tables_file_path: str):
+    tables_dict = utils.load_json(tables_file_path)
+
+    data = {
+        Constants.Attributes.SIZE: 0,
+        Constants.Attributes.NO_MISSING: 0,
+        Constants.Attributes.MISSING_CAPTION: 0,
+        Constants.Attributes.MISSING_CITATIONS: 0,
+        Constants.Attributes.MISSING_BOTH: 0 
+    }
+
+    condition_mapping = {
+        (True, True): Constants.Attributes.NO_MISSING,
+        (False, True): Constants.Attributes.MISSING_CAPTION,
+        (True, False): Constants.Attributes.MISSING_CITATIONS,
+        (False, False): Constants.Attributes.MISSING_BOTH
+    }
+
+    for _, article_data in tables_dict.items():
+        for table_data in article_data:
+            data[Constants.Attributes.SIZE] += 1
+
+            has_caption = table_data[Constants.Attributes.CAPTION] != ""
+            has_citations = len(table_data[Constants.Attributes.CITATIONS]) > 0
+
+            condition_key = (has_caption, has_citations)
+            data[condition_mapping[condition_key]] += 1
+
+    return data

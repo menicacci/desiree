@@ -167,3 +167,5 @@ def compare_results(gt_path: str, output_dirs: list[tuple[str, int]], save_json_
     }
 
     utils.write_json(output, save_json_path)
+
+    return output

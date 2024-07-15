@@ -26,6 +26,11 @@ def split_table_string(table_string: str):
     return article_id, table_idx
 
 
+def replace_placeholder(content, placeholder, value):
+    placeholder = f"{placeholder}"
+    return content.replace(placeholder, value)
+
+
 def check_path(path):
     if not os.path.exists(path):
         os.makedirs(path)
@@ -168,6 +173,11 @@ def read_html(html_file_path: str):
             return file.read()
     except FileNotFoundError:
         return None
+    
+
+def read_file(file_path):
+    with open(file_path) as file:
+        return file.read()
     
 
 def process_excel_column(file_path, column_name, function):

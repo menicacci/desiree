@@ -27,7 +27,7 @@ def split_table_string(table_string: str):
 
 
 def replace_placeholder(content, placeholder, value):
-    placeholder = f"{placeholder}"
+    placeholder = "{" + placeholder + "}"
     return content.replace(placeholder, value)
 
 

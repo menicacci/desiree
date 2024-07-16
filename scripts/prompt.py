@@ -17,9 +17,7 @@ def message(role, content) -> dict:
     return {"role": role, "content": content}
 
 
-def build_user_message(message_path, prompt_data, html_prompt):
-    content = utils.read_file(message_path)
-
+def build_input_message(content, prompt_data, html_prompt):
     if html_prompt:
         content = utils.replace_placeholder(content, Constants.Attributes.HTML_TABLE, prompt_data)
     else:
@@ -29,29 +27,7 @@ def build_user_message(message_path, prompt_data, html_prompt):
     return content
 
 
-def build_messages(messages_file_path, prompt_data, html_prompt):
-    content_system_1 = utils.read_file(messages_file_path['system_1'])
-    content_user_1 = utils.read_file(messages_file_path['user_1'])
-    content_assistant = utils.read_file(messages_file_path['assistant'])
-    content_user_2 = build_user_message(messages_file_path['user_2'], prompt_data, html_prompt)
-    content_system_2 = utils.read_file(messages_file_path['system_2'])
-
-    messages_dict = [
-        message("system", content_system_1),
-        message("user", content_user_1),
-        message("assistant", content_assistant),
-        message("user", content_user_2),
-        message("system", content_system_2)
-    ]
-
-    # number of input tokens
-    input_tokens = num_tokens_from_string(
-        content_system_1 + content_user_1 + content_assistant + content_user_2 + content_system_2)
-
-    return messages_dict, input_tokens
-
-
-def build_prompt(article_table, messages_file_paths, html_prompt):
+def get_prompt_data(article_table, html_prompt):
     if html_prompt:
         prompt_data = article_table[Constants.Attributes.TABLE].encode('ascii', 'ignore').decode()
     else:
@@ -60,38 +36,66 @@ def build_prompt(article_table, messages_file_paths, html_prompt):
             Constants.Attributes.CITATION: article_table[Constants.Attributes.CITATIONS][0] if len(article_table[Constants.Attributes.CITATIONS]) > 0 else ""
         }
 
-    return build_messages(messages_file_paths, prompt_data, html_prompt)
+    return prompt_data
 
 
-def save_prompt_structure(messages_file_paths: dict, output_path: str):
-    original_prompt = f'''
-        {Constants.Roles.SYSTEM_1.upper()}:\n{utils.read_file(messages_file_paths[Constants.Roles.SYSTEM_1])}\n\n
-        {Constants.Roles.USER_1.upper()}:\n{utils.read_file(messages_file_paths[Constants.Roles.USER_1])}\n\n
-        {Constants.Roles.ASSISTANT.upper()}:\n{utils.read_file(messages_file_paths[Constants.Roles.ASSISTANT])}\n\n
-        {Constants.Roles.USER_2.upper()}:\n{utils.read_file(messages_file_paths[Constants.Roles.USER_2])}\n\n
-        {Constants.Roles.SYSTEM_2.upper()}:\n{utils.read_file(messages_file_paths[Constants.Roles.SYSTEM_2])}\n\n
-    '''
+def get_structure(messages_path: str):
+    msg_paths = []
+    for file_name in os.listdir(messages_path):
+        if file_name.endswith(".txt"):
+            msg_paths.append(os.path.join(messages_path, file_name))
+
+    msg_paths.sort(key=lambda x: int(os.path.basename(x).split('_')[0]))
+
+    messages = [
+        message(os.path.basename(msg_filename).split('_')[1].split('.')[0], utils.read_file(msg_filename))
+        for msg_filename in msg_paths
+    ]
+
+    return messages
+
+
+def build(article_table, messages_file_path):
+    msg_data = utils.load_json(os.path.join(messages_file_path, Constants.Filenames.MSG_INFO))
+    
+    html_prompt = msg_data["html_table"]
+    input_msg = msg_data["input_msg"]
+
+    messages = get_structure(messages_file_path)
+    
+    messages[input_msg]["content"] = build_input_message(
+        messages[input_msg]["content"],
+        get_prompt_data(article_table, html_prompt),
+        html_prompt
+    )
+
+    num_tokens = sum([num_tokens_from_string(msg["content"]) for msg in messages])
+    return messages, num_tokens
+
+
+def save(messages_file_paths: dict, output_path: str):
+    msgs = get_structure(messages_file_paths)
+    
+    prompt_structure = "".join([
+        f'        {msg["role"].upper()}:\n{msg["content"]}\n\n\n\n' for msg in msgs
+    ])
 
     with open(os.path.join(output_path, Constants.Filenames.PROMPT), "w") as text_file:
-        text_file.write(original_prompt)
+        text_file.write(prompt_structure)
 
 
-def read_prompt(prompt_path: str):
-    prompt_text = utils.read_file(prompt_path)
+def read(prompt_path: str):
+    prompt_structure = utils.read_file(prompt_path)
 
-    pattern = r'\s{8}([A-Z_\d]+):\n(.*?)\n\n'
-    matches = re.findall(pattern, prompt_text, re.DOTALL)
+    pattern = r'\s{8}([A-Z]+):\n(.*?)\n\n\n'
+    matches = re.findall(pattern, prompt_structure, re.DOTALL)
 
-    return {key.strip().replace(":", "").replace(" ", "_").lower(): value.strip() for key, value in matches}
+    return [message(key.strip().replace(":", "").lower(), value.strip()) for key, value in matches]
 
 
-def write_prompt_structure(prompt_messages: dict, save_path: str):
-    msg_paths = {}
-    for role, message in prompt_messages.items():
-        role_msg_path = os.path.join(save_path, f"{role}.txt")
+def write(messages: list, save_path: str):
+    for pos, message in enumerate(messages):
+        role_msg_path = os.path.join(save_path, f'{pos}_{message["role"]}.txt')
+
         with open(role_msg_path, "w") as file:
-            file.write(message)
-
-        msg_paths[role] = role_msg_path
-
-    return msg_paths
+            file.write(message["content"])

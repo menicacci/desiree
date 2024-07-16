@@ -61,10 +61,8 @@ class Constants:
     
     class Roles:
         ASSISTANT = "assistant"
-        SYSTEM_1 = "system_1"
-        SYSTEM_2 = "system_2"
-        USER_1 = "user_1"
-        USER_2 = "user_2"
+        SYSTEM = "system"
+        USER = "user"
 
     class ColumnHeaders:
         ARTICLE_ID = "article_id"

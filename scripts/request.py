@@ -91,17 +91,8 @@ def set_up_test_dir(output_path: str, tables_path: str, msgs_path: dict):
     if utils.check_path(output_path):
         return None
 
-    msgs_file_path = {
-        Constants.Roles.SYSTEM_1:  f'{msgs_path}/{Constants.Roles.SYSTEM_1}.txt',
-        Constants.Roles.SYSTEM_2:  f'{msgs_path}/{Constants.Roles.SYSTEM_2}.txt',
-        Constants.Roles.USER_1:    f'{msgs_path}/{Constants.Roles.USER_1}.txt',
-        Constants.Roles.USER_2:    f'{msgs_path}/{Constants.Roles.USER_2}.txt',
-        Constants.Roles.ASSISTANT: f'{msgs_path}/{Constants.Roles.ASSISTANT}.txt'
-    }
-
     test_info = {}
-    test_info[Constants.Attributes.MESSAGES_PATH] = msgs_file_path
-    test_info[Constants.Attributes.HTML_TABLE] = utils.load_json(os.path.join(msgs_path, Constants.Filenames.MSG_INFO))[Constants.Attributes.HTML_TABLE]
+    test_info[Constants.Attributes.MESSAGES_PATH] = msgs_path
     test_info[Constants.Attributes.TABLES_PATH] = tables_path
     test_info[Constants.Attributes.NUM_TABLE] = table.reset_processed_tables(tables_path)    
 
@@ -118,8 +109,8 @@ def get_test_info(output_path: str):
     return test_info
 
 
-def extract_claims(client, article_table, file_name, messages_file_paths, output_folder, html_prompt=True, save_prompt=True):
-    prompt, input_tokens = p_utils.build_prompt(article_table, messages_file_paths, html_prompt)
+def extract_claims(client, article_table, file_name, messages_file_paths, output_folder, save_prompt=True):
+    prompt, input_tokens = p_utils.build(article_table, messages_file_paths)
 
     if save_prompt:
         # For replication purposes
@@ -160,8 +151,7 @@ def process_tables(connection_info: dict, test_info: dict, max_cycles: int, num_
             messages_file_paths=test_info[Constants.Attributes.MESSAGES_PATH], 
             articles_tables=tables, 
             output_path=test_info[Constants.Attributes.TEST_IDX], 
-            num_threads=it_num_thread, 
-            html_prompt=test_info[Constants.Attributes.HTML_TABLE]
+            num_threads=it_num_thread
         )
 
         tables_to_process = table.check_processed_tables(test_info[Constants.Attributes.TABLES_PATH], answer_path)
@@ -175,10 +165,10 @@ def process_tables(connection_info: dict, test_info: dict, max_cycles: int, num_
     }
 
 
-def parallel_excecution(connection_data: dict, messages_file_paths: dict, articles_tables: dict, output_path: str, num_threads: int, html_prompt=True):
+def parallel_excecution(connection_data: dict, messages_file_paths: dict, articles_tables: dict, output_path: str, num_threads: int):
     clients = [init_client(connection_data) for _ in range(num_threads)]
 
-    p_utils.save_prompt_structure(messages_file_paths, output_path)
+    p_utils.save(messages_file_paths, output_path)
 
     progress = 0
     with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
@@ -191,8 +181,7 @@ def parallel_excecution(connection_data: dict, messages_file_paths: dict, articl
                         article_table,
                         f"{article_id}_{index}",
                         messages_file_paths,
-                        output_path,
-                        html_prompt
+                        output_path
                     )
 
                     progress += 1
@@ -215,17 +204,23 @@ def repeat_test(connection_info: dict, output_path: str, test_idx: int, num_thre
     if not os.path.exists(test_dir):
         return None
 
-    temp_dir = os.path.join(output_path, Constants.Directories.TEMP)
+    temp_dir = os.path.join(test_dir, Constants.Directories.TEMP)
     os.makedirs(temp_dir, exist_ok=True)
 
     test_info = get_test_info(output_path)
-    test_info[Constants.Attributes.TEST_IDX] = test_dir    
-    original_prompt = p_utils.read_prompt(os.path.join(test_dir, Constants.Filenames.PROMPT))
-    msg_paths = p_utils.write_prompt_structure(original_prompt, test_info[Constants.Attributes.TEST_IDX])
-    test_info[Constants.Attributes.MESSAGES_PATH] = msg_paths
+
+    # copy prompt properties
+    original_msgs_path = os.path.join(test_info[Constants.Attributes.MESSAGES_PATH], Constants.Filenames.MSG_INFO)
+    shutil.copy(original_msgs_path, temp_dir)
+
+    test_info[Constants.Attributes.TEST_IDX] = test_dir
+    test_info[Constants.Attributes.MESSAGES_PATH] = temp_dir 
+
+    original_prompt = p_utils.read(os.path.join(test_dir, Constants.Filenames.PROMPT))
+    p_utils.write(original_prompt, temp_dir)
+
     run_data = process_tables(connection_info, test_info, max_cycles, num_thread)
 
     shutil.rmtree(temp_dir)
-
     return run_data
     

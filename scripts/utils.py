@@ -190,6 +190,16 @@ def process_excel_column(file_path, column_name, function):
     return function(column_values)
 
 
+def process_excel_columns(file_path, columns_names, function):
+    df = pd.read_excel(file_path, dtype=str)
+
+    for column_name in columns_names:
+        if column_name not in df.columns:
+            raise ValueError(f"Column '{column_name}' does not exist in the Excel file.")
+
+    columns_values = df[columns_names].values
+    return function(columns_values)
+
 def count_articles_dict_elems(article_dict: dict):
     c = 0
     for article_id, article_tables_dict in article_dict.items():

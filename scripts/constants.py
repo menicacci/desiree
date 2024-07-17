@@ -4,15 +4,18 @@ class Constants:
     PROJECT_PATH = "$GITHUB_HOME/claim-extraction"
 
     class Filenames:
-        CLAIMS = "claims.json"    
+        CLAIMS = "claims.json"
+        COMPARISON = "comparison.xlsx"   
         MSG_INFO = "msg_info.json"
-        RESULTS = "results.pkl"
         PROMPT = "prompt.txt"
-        TEST_INFO = "test_info.json"
+        RESULTS = "results.pkl"
         STATS = "stats.xlsx"
+        TEST_INFO = "test_info.json"
+        TOT_RECAP = "tot_recap.json"
 
     class Directories:
-        ARTICLES = f"articles"
+        ARTICLES = "articles"
+        COMPARISONS = "comparisons"
         EXPERIMENTS = "experiments"
         EXTRACTED_TABLE = f"extracted_tables"
         GROUND_TRUTH = "ground_truth"
@@ -32,6 +35,7 @@ class Constants:
         CYCLES = "num_cycles"
         COUNT = "count"
         DIRECTORY = "dir"
+        ELEMENT_TYPES = "element_types"
         EXTRACTED_CLAIMS = "extracted_claims"
         GT_PATH = "gt_path"
         HTML_TABLE = "html_table"
@@ -87,3 +91,36 @@ class Constants:
             TABLE_IDX,
             OUTPUT
         )
+
+    class TableTypes:
+        UNCLASSIFIED_TABLE = 0
+        RESULT_TABLE = 1
+        DATA_TABLE = 2
+        EXAMPLE_TABLE = 3
+
+        TYPES = [
+            UNCLASSIFIED_TABLE,
+            RESULT_TABLE,
+            DATA_TABLE,
+            EXAMPLE_TABLE
+        ]
+
+        ANSWER_DISTR = "Answers Distribution for type: "
+        AVG_TOKENS = "AVG. # Tokens"
+        NUM_CORRECT = "# Correct Matches"
+        NUM_TABLES = "# Tables"
+        NUM_WRONG = "# Wrong Matches"
+        PERC_CORRECT = "% Correct Matches"
+        TOT_TOKENS = "TOT. # Tokens"
+
+        ROWS_BASE = [
+            NUM_TABLES,
+            NUM_CORRECT,
+            NUM_WRONG,
+            PERC_CORRECT,
+            TOT_TOKENS,
+            AVG_TOKENS
+        ]
+
+
+

@@ -118,54 +118,36 @@ def read_model_output(output_dir: str):
     return results
 
 
-def calculate_output_accuracy(gt_dict, outcome_dict, check_correctness=lambda x, y: x == y):
-    common_elements = 0
-    correct_elements = 0
+def agglomerate_results(gt_dict, outcome_dict):
+    common_elements = {}
     
     for article_id, article_tables_dict in gt_dict.items():
         if article_id not in outcome_dict:
             continue
 
-        for table_idx, table_type in article_tables_dict.items():
+        for table_idx, gt_output in article_tables_dict.items():
             if table_idx not in outcome_dict[article_id]:
                 continue
-            
-            common_elements += 1
-            if check_correctness(table_type, outcome_dict[article_id][table_idx]):
-                correct_elements += 1
+
+            common_elements[f"{article_id}_{table_idx}"] = (gt_output, outcome_dict[article_id][table_idx])
                 
-    return common_elements, correct_elements
+    return common_elements
 
 
-def compare_results(gt_path: str, output_dirs: list[tuple[str, int]], save_json_path: str):
+def compare_results(gt_path: str, output_dirs: list[tuple[str, int]], compare_function, save_path: str):
     gt_result = read_model_output(gt_path)
 
-    output_paths = [os.path.join(dir, str(test_idx), Constants.Directories.LLM_ANSWER) for dir, test_idx in output_dirs]
-    results = [read_model_output(path) for path in output_paths]
-    
-    comparison = [calculate_output_accuracy(gt_result, result) for result in results]
-
-    stats_paths = [os.path.join(dir, str(test_idx), Constants.Filenames.STATS) for dir, test_idx in output_dirs]
-    avg_input_tokens = [utils.process_excel_column(path, Constants.ColumnHeaders.INPUT_TOKENS, utils.calculate_average) for path in stats_paths]
-
-    dirs_data = [ 
-        {
-            Constants.Attributes.DIRECTORY: output_dirs[i][0],
-            Constants.Attributes.TEST_IDX: output_dirs[i][1],
-            Constants.Attributes.SIZE: utils.count_articles_dict_elems(results[i]),
-            Constants.Attributes.COMMON_ELEMENTS: comparison[i][0],
-            Constants.Attributes.CORRECT_ELEMENTS: comparison[i][1],
-            Constants.Attributes.PRC_CORRECT: comparison[i][1]/comparison[i][0],
-            Constants.Attributes.AVG_NUM_INPUT_TOKEN: avg_input_tokens[i]
-        } for i in range(len(output_dirs))
+    output_paths = [
+        os.path.join(dir, str(test_idx), Constants.Directories.LLM_ANSWER) 
+        for dir, test_idx in output_dirs
+    ]
+    agglomerated_results = [
+        agglomerate_results(gt_result, dir_result) 
+        for dir_result in [read_model_output(path) for path in output_paths]
     ]
 
-    output = {
-        Constants.Attributes.GT_PATH: gt_path,
-        Constants.Attributes.SIZE: utils.count_articles_dict_elems(gt_result),
-        Constants.Attributes.TEST_DATA: dirs_data
-    }
+    for results, (dir, test_idx) in zip(agglomerated_results, output_dirs):
+        save_results_path = os.path.join(save_path, f"{os.path.basename(dir)}_{test_idx}")
+        utils.check_path(save_results_path)
 
-    utils.write_json(output, save_json_path)
-
-    return output
+        compare_function(results, os.path.join(dir, str(test_idx), Constants.Filenames.STATS), save_results_path)

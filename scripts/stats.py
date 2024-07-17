@@ -4,7 +4,6 @@ from scripts.constants import Constants
 import pandas as pd
 import openpyxl
 from openpyxl import Workbook
-from openpyxl.utils import get_column_letter
 
 
 def get_claim_types(data_dir):

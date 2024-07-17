@@ -4,7 +4,8 @@ import time
 import shutil
 from openai.lib.azure import AzureOpenAI
 from requests.exceptions import ReadTimeout
-from scripts import utils, table, stats, prompt as p_utils
+from scripts import utils, stats, prompt as p_utils
+from scripts.table import table
 from scripts.constants import Constants
 import concurrent.futures
 

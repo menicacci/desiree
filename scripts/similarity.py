@@ -1,6 +1,5 @@
 from scripts import embedding
 from scripts.utils import detect_number, remove_items, find_substrings, fuzzy_string_similarity
-import difflib
 
 class Similarity:
 

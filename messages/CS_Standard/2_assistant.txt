@@ -1,3 +1,0 @@
-<{<Model, HRN-ACC>, <Dataset, CoNLL-2012 English test set>}, MUC Precision, 94.7>
-<{<Model, HRN-ACC>, <Dataset, CoNLL-2012 English test set>}, MUC Recall, 90.8>
-<{<Model, HRN-ACC>, <Dataset, CoNLL-2012 English test set>}, MUC F1, 93.5>

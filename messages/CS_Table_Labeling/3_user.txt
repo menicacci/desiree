@@ -1,2 +1,0 @@
-Classify this table:
-{html_table}

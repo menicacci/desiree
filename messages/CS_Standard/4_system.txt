@@ -1,3 +1,0 @@
-You have to consider ALL the table cells during the extraction, do NOT ignore any of them. If you are considering a cell, use ALL of its content but DO NOT extract ANY HTML tag inside the claims.
-When analyzing the table, CHECK if it actually contains scientific results or not, act accordingly not extracting measure and outcome if there aren't.
-Respond ONLY with the conditional claims, DO NOT enumerate them in any way. You have to extract ALL of them, DON'T BE LAZY. You can NOT answer with something like "and so on".

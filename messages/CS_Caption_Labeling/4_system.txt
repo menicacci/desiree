@@ -1,1 +1,0 @@
-Respond ONLY with the table type, DO NOT write anything else. If you are not able to classify the table, respond with 0.

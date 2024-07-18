@@ -1,2 +1,0 @@
-Extract ALL the conditional claims (do NOT be lazy by writing just some of the claims) and nothing else from this table:
-{html_table}

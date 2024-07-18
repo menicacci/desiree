@@ -2,6 +2,7 @@ import os
 import re
 import tiktoken
 from scripts.constants import Constants
+from scripts.table import table_prompt
 from scripts import utils
 
 
@@ -14,29 +15,10 @@ def num_tokens_from_string(string: str) -> int:
 
 
 def message(role, content) -> dict:
-    return {"role": role, "content": content}
-
-
-def build_input_message(content, prompt_data, html_prompt):
-    if html_prompt:
-        content = utils.replace_placeholder(content, Constants.Attributes.HTML_TABLE, prompt_data)
-    else:
-        content = utils.replace_placeholder(content, Constants.Attributes.CAPTION, prompt_data[Constants.Attributes.CAPTION])
-        content = utils.replace_placeholder(content, Constants.Attributes.CITATION, prompt_data[Constants.Attributes.CITATION])
-    
-    return content
-
-
-def get_prompt_data(article_table, html_prompt):
-    if html_prompt:
-        prompt_data = article_table[Constants.Attributes.TABLE].encode('ascii', 'ignore').decode()
-    else:
-        prompt_data = {
-            Constants.Attributes.CAPTION: article_table[Constants.Attributes.CAPTION],
-            Constants.Attributes.CITATION: article_table[Constants.Attributes.CITATIONS][0] if len(article_table[Constants.Attributes.CITATIONS]) > 0 else ""
-        }
-
-    return prompt_data
+    return {
+        Constants.MsgStructure.ROLE: role, 
+        Constants.MsgStructure.CONTENT: content
+    }
 
 
 def get_structure(messages_path: str):
@@ -55,21 +37,18 @@ def get_structure(messages_path: str):
     return messages
 
 
-def build(article_table, messages_file_path):
+def build(messages_file_path, data):
+    messages = get_structure(messages_file_path)
     msg_data = utils.load_json(os.path.join(messages_file_path, Constants.Filenames.MSG_INFO))
     
-    html_prompt = msg_data["html_table"]
-    input_msg = msg_data["input_msg"]
+    if msg_data[Constants.Attributes.MSG_TYPE] == Constants.MsgType.TABLE:
+        messages = table_prompt.build(data, messages, msg_data)
+    # Just one type of message supported for now
+    else:
+        raise ValueError("Unsupported type")
 
-    messages = get_structure(messages_file_path)
-    
-    messages[input_msg]["content"] = build_input_message(
-        messages[input_msg]["content"],
-        get_prompt_data(article_table, html_prompt),
-        html_prompt
-    )
+    num_tokens = sum([num_tokens_from_string(msg[Constants.MsgStructure.CONTENT]) for msg in messages])
 
-    num_tokens = sum([num_tokens_from_string(msg["content"]) for msg in messages])
     return messages, num_tokens
 
 
@@ -77,7 +56,7 @@ def save(messages_file_paths: dict, output_path: str):
     msgs = get_structure(messages_file_paths)
     
     prompt_structure = "".join([
-        f'        {msg["role"].upper()}:\n{msg["content"]}\n\n\n\n' for msg in msgs
+        f'        {msg[Constants.MsgStructure.ROLE].upper()}:\n{msg[Constants.MsgStructure.CONTENT]}\n\n\n\n' for msg in msgs
     ])
 
     with open(os.path.join(output_path, Constants.Filenames.PROMPT), "w") as text_file:
@@ -95,7 +74,7 @@ def read(prompt_path: str):
 
 def write(messages: list, save_path: str):
     for pos, message in enumerate(messages):
-        role_msg_path = os.path.join(save_path, f'{pos}_{message["role"]}.txt')
+        role_msg_path = os.path.join(save_path, f'{pos}_{message[Constants.MsgStructure.ROLE]}.txt')
 
         with open(role_msg_path, "w") as file:
-            file.write(message["content"])
+            file.write(message[Constants.MsgStructure.CONTENT])

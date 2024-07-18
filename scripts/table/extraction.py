@@ -143,6 +143,8 @@ def extract_and_save_tables(articles_directory: str, save_path: str, file_name: 
 
 def check_extracted_data(tables_file_path: str):
     tables_dict = utils.load_json(tables_file_path)
+    if tables_dict is None:
+        raise FileNotFoundError()
 
     data = {
         Constants.Attributes.SIZE: 0,

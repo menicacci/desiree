@@ -1,4 +1,5 @@
-from scripts import claim, utils, table
+from scripts import claim, utils
+from scripts.table import table
 from scripts.similarity import Similarity
 from scripts.constants import Constants
 import os

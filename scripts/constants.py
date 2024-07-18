@@ -44,6 +44,7 @@ class Constants:
         MISSING_CAPTION = "missing_caption"
         MISSING_BOTH = "missing_both"
         MISSING_CITATIONS = "missing_citations"
+        MSG_TYPE = "msg_type"
         NAME = "name"
         NO_MISSING = "no_missing_attr"
         NUM_TABLE = "num_tables"
@@ -62,11 +63,6 @@ class Constants:
         WRONG_CLAIMS = "wrong_claims"
         VALUE = "value"
         VALUES = "values"
-    
-    class Roles:
-        ASSISTANT = "assistant"
-        SYSTEM = "system"
-        USER = "user"
 
     class ColumnHeaders:
         ARTICLE_ID = "article_id"
@@ -92,35 +88,10 @@ class Constants:
             OUTPUT
         )
 
-    class TableTypes:
-        UNCLASSIFIED_TABLE = 0
-        RESULT_TABLE = 1
-        DATA_TABLE = 2
-        EXAMPLE_TABLE = 3
+    class MsgStructure:
+        CONTENT = "content"
+        ROLE = "role"
 
-        TYPES = [
-            UNCLASSIFIED_TABLE,
-            RESULT_TABLE,
-            DATA_TABLE,
-            EXAMPLE_TABLE
-        ]
-
-        ANSWER_DISTR = "Answers Distribution for type: "
-        AVG_TOKENS = "AVG. # Tokens"
-        NUM_CORRECT = "# Correct Matches"
-        NUM_TABLES = "# Tables"
-        NUM_WRONG = "# Wrong Matches"
-        PERC_CORRECT = "% Correct Matches"
-        TOT_TOKENS = "TOT. # Tokens"
-
-        ROWS_BASE = [
-            NUM_TABLES,
-            NUM_CORRECT,
-            NUM_WRONG,
-            PERC_CORRECT,
-            TOT_TOKENS,
-            AVG_TOKENS
-        ]
-
-
+    class MsgType:
+        TABLE = "table"
 

@@ -110,8 +110,8 @@ def get_test_info(output_path: str):
     return test_info
 
 
-def extract_claims(client, article_table, file_name, messages_file_paths, output_folder, save_prompt=True):
-    prompt, input_tokens = p_utils.build(article_table, messages_file_paths)
+def extract_claims(client, data, file_name, messages_file_paths, output_folder, save_prompt=True):
+    prompt, input_tokens = p_utils.build(messages_file_paths, data)
 
     if save_prompt:
         # For replication purposes

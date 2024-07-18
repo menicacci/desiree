@@ -54,5 +54,6 @@ private.json
 
 experiments/
 requests/
+messages/
 
 .ipynb_checkpoints

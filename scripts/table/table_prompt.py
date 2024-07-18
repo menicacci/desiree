@@ -10,7 +10,7 @@ def build_input_msg(input_msg, table_data, input_structure):
     else:
         if input_structure == TableConstants.PromptStructure.CAP or input_structure == TableConstants.PromptStructure.CAP_CIT:
             input_msg = utils.replace_placeholder(input_msg, Constants.Attributes.CAPTION, table_data[Constants.Attributes.CAPTION])
-        elif input_structure == TableConstants.PromptStructure.CIT or input_structure == TableConstants.PromptStructure.CAP_CIT:
+        if input_structure == TableConstants.PromptStructure.CIT or input_structure == TableConstants.PromptStructure.CAP_CIT:
             input_msg = utils.replace_placeholder(input_msg, Constants.Attributes.CITATION, table_data[Constants.Attributes.CITATIONS][0] if len(table_data[Constants.Attributes.CITATIONS]) > 0 else "")
 
     return input_msg

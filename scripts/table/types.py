@@ -2,12 +2,17 @@ import os
 import pandas as pd
 from scripts.constants import Constants
 from scripts.table.constants import TableConstants
-from scripts import utils
+from scripts import utils, claim, stats
+import shutil
 
 
-def compare_table_types(results: dict, stats_path: str, save_path: str):
+def compare_table_types(results: dict, stats_path: str, save_path: str, opts=None):
+    utils.check_path(save_path)
+
+    types = TableConstants.Types.TYPES if opts is None else opts[TableConstants.Attributes.TYPES]
+    
     # save results for each table type
-    range_table_types = range(len(TableConstants.Types.TYPES))
+    range_table_types = range(len(types))
 
     data_model = {k: [0] * len(range_table_types) for k in TableConstants.Types.ROWS_BASE}
     
@@ -40,9 +45,9 @@ def compare_table_types(results: dict, stats_path: str, save_path: str):
 
     data = [data_model[row] for row in TableConstants.Types.ROWS_BASE] + confusion_matrix
 
-    rows_distribution = [TableConstants.Types.ANSWER_DISTR + str(type) for type in TableConstants.Types.TYPES]
+    rows_distribution = [TableConstants.Types.ANSWER_DISTR + str(type) for type in types]
     rows = TableConstants.Types.ROWS_BASE + rows_distribution
-    header = TableConstants.Types.TYPES
+    header = types
 
     df = pd.DataFrame(data, index=rows, columns=header)
     df.to_excel(os.path.join(save_path, Constants.Filenames.COMPARISON), index=True, engine="xlsxwriter")
@@ -68,3 +73,40 @@ def compare_table_types(results: dict, stats_path: str, save_path: str):
     utils.write_json(totals, os.path.join(save_path, Constants.Filenames.TOT_RECAP))
 
     return df
+
+
+def get_types_from_claims(output_dir: str):
+    claim.get_claims(output_dir)
+    
+    claims_classified = stats.get_claim_types(output_dir)
+    table_types = Constants.Claims.CLAIM_STRUCTURES
+
+    temp_dir = os.path.join(output_dir, Constants.Directories.TEMP)
+    os.makedirs(temp_dir, exist_ok=True)
+
+    for claims, type in zip(claims_classified, table_types):
+        for id in claims:
+            filename_txt = id + ".txt"
+            with open(os.path.join(temp_dir, filename_txt), "w") as file:
+                file.write(str(type % len(table_types)))
+
+    results = stats.read_model_output(temp_dir)
+    shutil.rmtree(temp_dir)
+
+    return results
+
+
+def check_claims_types(gt_answer_path, output_path, save_path):
+    gt_res = stats.read_model_output(gt_answer_path)
+    result = get_types_from_claims(output_path)
+    agg_results = stats.agglomerate_results(gt_res, result)
+
+    return compare_table_types(
+        agg_results, 
+        os.path.join(output_path, Constants.Filenames.STATS), 
+        save_path, 
+        {
+            TableConstants.Attributes.TYPES: Constants.Claims.CLAIM_STRUCTURES
+        }
+    )
+    

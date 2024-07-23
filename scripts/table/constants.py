@@ -1,6 +1,9 @@
 
 class TableConstants:
 
+    class Attributes:
+        TYPES = "types"
+
     class Types:
         UNCLASSIFIED_TABLE = 0
         RESULT_TABLE = 1

@@ -6,6 +6,13 @@ from scripts.constants import Constants
 from io import StringIO
 
 
+def get_claims(data_dir: str):
+    model_answers_path = os.path.join(data_dir, Constants.Directories.LLM_ANSWER)
+    extracted_claims_path = os.path.join(data_dir, Constants.Filenames.CLAIMS)
+
+    return extract_answers(model_answers_path, extracted_claims_path)
+
+
 def check_tuple(input_str: str):
     pattern = r'^(.+?),\s+(.+)$'
     match = re.match(pattern, input_str)

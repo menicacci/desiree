@@ -1,7 +1,7 @@
 
 class Constants:
 
-    PROJECT_PATH = "$GITHUB_HOME/claim-extraction"
+    PROJECT_PATH = "$GITHUB_HOME/desiree"
 
     class Filenames:
         CLAIMS = "claims.json"
@@ -94,4 +94,15 @@ class Constants:
 
     class MsgType:
         TABLE = "table"
+
+    class Claims:
+        RESULT_STRUCTURE = 1
+        NOT_RESULT_STRUCTURE = 2
+        WRONG_STRUCTURE = 3
+
+        CLAIM_STRUCTURES = [
+            RESULT_STRUCTURE,
+            NOT_RESULT_STRUCTURE,
+            WRONG_STRUCTURE
+        ]
 

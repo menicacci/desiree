@@ -133,20 +133,19 @@ def agglomerate_results(gt_dict, outcome_dict):
     return common_elements
 
 
-def compare_results(gt_path: str, output_dirs: list[tuple[str, int]], compare_function, save_path: str):
+def compare_multiple_results(gt_path: str, output_dirs: list[tuple[str, int]], compare_function, save_path: str, opts=None):
     gt_result = read_model_output(gt_path)
 
-    output_paths = [
-        os.path.join(dir, str(test_idx), Constants.Directories.LLM_ANSWER) 
-        for dir, test_idx in output_dirs
-    ]
-    agglomerated_results = [
-        agglomerate_results(gt_result, dir_result) 
-        for dir_result in [read_model_output(path) for path in output_paths]
-    ]
-
-    for results, (dir, test_idx) in zip(agglomerated_results, output_dirs):
+    for dir, test_idx in output_dirs:
         save_results_path = os.path.join(save_path, f"{os.path.basename(dir)}_{test_idx}")
-        utils.check_path(save_results_path)
+        compare_result(gt_result, os.path.join(dir, str(test_idx)), compare_function, save_results_path, opts)
 
-        compare_function(results, os.path.join(dir, str(test_idx), Constants.Filenames.STATS), save_results_path)
+
+def compare_result(gt_results: dict, output_dir: str, compare_function, save_path: str, opts=None):
+    answer_path = os.path.join(output_dir, Constants.Directories.LLM_ANSWER)
+    stats_path = os.path.join(output_dir, Constants.Filenames.STATS)
+
+    results = read_model_output(answer_path)
+    agg_results = agglomerate_results(gt_results, results)
+
+    compare_function(agg_results, stats_path, save_path, opts)

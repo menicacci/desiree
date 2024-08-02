@@ -7,7 +7,7 @@ from io import StringIO
 
 
 def get_claims(data_dir: str):
-    model_answers_path = os.path.join(data_dir, Constants.Directories.LLM_ANSWER)
+    model_answers_path = os.path.join(data_dir, Constants.Directories.ANSWERS)
     extracted_claims_path = os.path.join(data_dir, Constants.Filenames.CLAIMS)
 
     return extract_answers(model_answers_path, extracted_claims_path)

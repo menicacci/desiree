@@ -38,21 +38,6 @@ def check_path(path):
     return True
 
 
-def get_test_index(directory):
-    if not os.path.exists(directory):
-        raise ValueError(f"The directory '{directory}' does not exist.")
-    
-    dirs = [d for d in os.listdir(directory) if os.path.isdir(os.path.join(directory, d)) and d.isdigit()]
-    if not dirs:
-        return 1
-    else:
-        return max(map(int, dirs)) + 1
-    
-
-def get_test_path(path):
-    return os.path.join(path, str(get_test_index(path)))
-
-
 def divide_by_sum(a, b):
     a_float = float(a)
     b_float = float(b)
@@ -141,12 +126,20 @@ def fuzzy_string_similarity(str_1, str_2, lower=True):
     return difflib.SequenceMatcher(None, str_1, str_2).ratio()
 
 
-def load_json(json_path: str):
+def load_json(json_path: str) -> dict:
     try:
         with open(json_path, "r") as file:
             return json.load(file)
     except FileNotFoundError:
         return None
+    
+
+def write_file(content: str, file_path: str, print_info=True):
+    with open(file_path, 'w') as file:
+        file.write(content)
+    
+    if print_info:
+        print(f"\t Saved answer at: {file_path}")
     
 
 def write_json(data: dict, json_path: str, indent=4):
@@ -200,10 +193,25 @@ def process_excel_columns(file_path, columns_names, function):
     columns_values = df[columns_names].values
     return function(columns_values)
 
-def count_articles_dict_elems(article_dict: dict):
-    c = 0
-    for article_id, article_tables_dict in article_dict.items():
-        for table_idx, table_type in article_tables_dict.items():
-            c += 1
 
-    return c
+def get_file_names(directory: str, format=".txt"):
+    format_len = len(format)
+    file_names = []
+
+    for file_name in os.listdir(directory):
+        if file_name.endswith(format):
+            file_names.append(file_name[:-format_len])
+
+    return file_names
+
+
+def check_not_none_and_type(elems: list, t: type):
+    if len(elems) == 0:
+        return False
+    
+    for e in elems:
+        if e is None or type(e) is not t:
+            print(type(e))
+            return False
+    
+    return True

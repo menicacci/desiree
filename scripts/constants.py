@@ -19,7 +19,7 @@ class Constants:
         EXPERIMENTS = "experiments"
         EXTRACTED_TABLE = f"extracted_tables"
         GROUND_TRUTH = "ground_truth"
-        LLM_ANSWER = "answers"
+        ANSWERS = "answers"
         MESSAGES = "messages"
         OUTPUT = "output"
         STATS = "stats"
@@ -69,6 +69,7 @@ class Constants:
         INPUT_TOKENS = "input_tokens"
         OUTPUT = "output"
         OUTPUT_TOKENS = "output_tokens"
+        REQUEST_ID = "request_id"
         REQUEST_TIME = "request_time"
         STREAM = "stream"
         TABLE_IDX = "table_idx"
@@ -91,9 +92,6 @@ class Constants:
     class MsgStructure:
         CONTENT = "content"
         ROLE = "role"
-
-    class MsgType:
-        TABLE = "table"
 
     class Claims:
         RESULT_STRUCTURE = 1

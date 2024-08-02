@@ -50,10 +50,9 @@ coverage.xml
 docs/_build/
 
 # Project
-private.json
-
 experiments/
 requests/
 messages/
+configurations/
 
 .ipynb_checkpoints

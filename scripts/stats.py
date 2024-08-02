@@ -28,7 +28,7 @@ def get_claim_types(data_dir):
 
 
 def wrong_claims_prc(data_dir: str):
-    model_answers_path = os.path.join(data_dir, Constants.Directories.LLM_ANSWER)
+    model_answers_path = os.path.join(data_dir, Constants.Directories.ANSWERS)
     extracted_claims_path = os.path.join(data_dir, Constants.Filenames.CLAIMS)
     extracted_claims = claim.extract_answers(model_answers_path, extracted_claims_path)
 
@@ -142,7 +142,7 @@ def compare_multiple_results(gt_path: str, output_dirs: list[tuple[str, int]], c
 
 
 def compare_result(gt_results: dict, output_dir: str, compare_function, save_path: str, opts=None):
-    answer_path = os.path.join(output_dir, Constants.Directories.LLM_ANSWER)
+    answer_path = os.path.join(output_dir, Constants.Directories.ANSWERS)
     stats_path = os.path.join(output_dir, Constants.Filenames.STATS)
 
     results = read_model_output(answer_path)

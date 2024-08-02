@@ -10,6 +10,16 @@ def load_tables_from_json(json_file):
     return data
 
 
+def get_table_ids(tables_dict: dict) -> list:
+    table_ids = []
+
+    for article_id, tables_list in tables_dict.items():
+        for table_idx, _ in enumerate(tables_list):
+            table_ids.append(f"{article_id}_{table_idx}")
+
+    return table_ids
+
+
 def reset_processed_tables(json_file_path: str):
     data = load_tables_from_json(json_file_path)
     num_tables = 0

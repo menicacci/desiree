@@ -1,9 +1,10 @@
 import os
+import shutil
+import pickle
 import pandas as pd
 from scripts.constants import Constants
 from scripts.table.constants import TableConstants
 from scripts import utils, claim, stats
-import shutil
 
 
 def compare_table_types(results: dict, stats_path: str, save_path: str, opts=None):
@@ -27,13 +28,19 @@ def compare_table_types(results: dict, stats_path: str, save_path: str, opts=Non
     )
     
     confusion_matrix = [[0] * len(range_table_types) for _ in range_table_types]
+    confusion_matrix_ids = [[[] for _ in range_table_types] for _ in range_table_types]
 
     for table_key, (gt_result, outcome) in results.items():
         tokens = int(input_tokens[table_key])
         data_model[TableConstants.Types.TOT_TOKENS][gt_result] += tokens
         data_model[TableConstants.Types.NUM_TABLES][gt_result] += 1
         confusion_matrix[gt_result][outcome] += 1
+        confusion_matrix_ids[gt_result][outcome].append(table_key)
         data_model[(TableConstants.Types.NUM_CORRECT if gt_result == outcome else TableConstants.Types.NUM_WRONG)][gt_result] += 1
+
+
+    with open(os.path.join(save_path, TableConstants.Filenames.CONF_MATRIX_IDS), "wb") as file:
+        pickle.dump(confusion_matrix_ids, file)
 
     for i in range_table_types:
         num = data_model[TableConstants.Types.NUM_TABLES][i]

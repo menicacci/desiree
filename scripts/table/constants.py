@@ -1,7 +1,13 @@
 
 class TableConstants:
 
+    class Filenames:
+        CONF_MATRIX_IDS = "confusion_matrix_ids.pkl"
+
     class Attributes:
+        MSGS_PATH = "messages_path"
+        NUM_TABLE = "num_tables"
+        TABLES_PATH = "tables_path"
         TYPES = "types"
 
     class Types:
@@ -15,6 +21,12 @@ class TableConstants:
             RESULT_TABLE,
             DATA_TABLE,
             EXAMPLE_TABLE
+        ]
+
+        CLAIMED_TYPES = [
+            UNCLASSIFIED_TABLE,
+            RESULT_TABLE,
+            DATA_TABLE
         ]
 
         ANSWER_DISTR = "Answers Distribution for type: "
@@ -43,3 +55,6 @@ class TableConstants:
     class PromptAttributes:
         INPUT_MSG = "input_msg"
         INPUT_STRUCTURE = "intput_structure"
+
+    class MsgType:
+        TABLE = "table"

@@ -1,5 +1,5 @@
 from scripts import claim, utils
-from scripts.table import table
+from scripts.table import table_utils
 from scripts.similarity import Similarity
 from scripts.constants import Constants
 import os
@@ -53,7 +53,7 @@ def evaluate_extracted_articles(tables_path: str, data_dir: str, override: bool,
             return results
 
     extracted_claims = claim.get_claims(data_dir)
-    extracted_tables = table.load_tables_from_json(tables_path)
+    extracted_tables = table_utils.load_tables_from_json(tables_path)
 
     evaluation = {}
     sim = Similarity(use_embeddings=use_embeddings)
@@ -71,7 +71,7 @@ def evaluate_extracted_articles(tables_path: str, data_dir: str, override: bool,
 
 def evaluate_extracted_article(tables_path: str, data_dir: str, article_id: str, table_idx: int, use_embeddings=False):
     extracted_claims = claim.get_claims(data_dir)
-    extracted_tables = table.load_tables_from_json(tables_path)
+    extracted_tables = table_utils.load_tables_from_json(tables_path)
 
     sim = Similarity(use_embeddings)
 

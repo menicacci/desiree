@@ -68,7 +68,7 @@ class TablePrompts:
             table_data,
             self.input_structure
         )
-
+        
         return messages
 
 

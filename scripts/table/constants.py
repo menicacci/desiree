@@ -3,6 +3,7 @@ class TableConstants:
 
     class Filenames:
         CONF_MATRIX_IDS = "confusion_matrix_ids.pkl"
+        STATS = "table_stats.xlsx"
 
     class Attributes:
         MSGS_PATH = "messages_path"
@@ -16,7 +17,7 @@ class TableConstants:
         DATA_TABLE = 2
         EXAMPLE_TABLE = 3
 
-        TYPES = [
+        CONTENT_TYPES = [
             UNCLASSIFIED_TABLE,
             RESULT_TABLE,
             DATA_TABLE,
@@ -58,3 +59,32 @@ class TableConstants:
 
     class MsgType:
         TABLE = "table"
+
+
+    class ColumnHeaders:
+        ARTICLE_ID = "article_id"
+        INPUT_TOKENS = "input_tokens"
+        OUTPUT = "output"
+        OUTPUT_TOKENS = "output_tokens"
+        REQUEST_TIME = "request_time"
+        TABLE_IDX = "table_idx"
+
+        STATS_HEADER_STRUCTURE = (
+            ARTICLE_ID,
+            TABLE_IDX,
+            INPUT_TOKENS, 
+            OUTPUT_TOKENS, 
+            REQUEST_TIME
+        )
+
+        TYPE_HEADER_STRUCTURE = (
+            ARTICLE_ID,
+            TABLE_IDX,
+            OUTPUT
+        )
+
+        PROCESS_COLUMN_STRUCTURE = [
+            ARTICLE_ID,
+            TABLE_IDX,
+            INPUT_TOKENS
+        ]

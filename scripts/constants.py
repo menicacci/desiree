@@ -14,8 +14,10 @@ class Constants:
         TOT_RECAP = "tot_recap.json"
 
     class Directories:
+        API = "API_Config"
         ARTICLES = "articles"
         COMPARISONS = "comparisons"
+        CONFIGURATIONS = "configurations"
         EXPERIMENTS = "experiments"
         EXTRACTED_TABLE = f"extracted_tables"
         GROUND_TRUTH = "ground_truth"
@@ -64,24 +66,11 @@ class Constants:
         VALUE = "value"
         VALUES = "values"
 
+    # ToDo: Refactor to make it indipendent from table type
     class ColumnHeaders:
         ARTICLE_ID = "article_id"
-        INPUT_TOKENS = "input_tokens"
         OUTPUT = "output"
-        OUTPUT_TOKENS = "output_tokens"
-        REQUEST_ID = "request_id"
-        REQUEST_TIME = "request_time"
-        STREAM = "stream"
         TABLE_IDX = "table_idx"
-
-        STATS_HEADER_STRUCTURE = (
-            ARTICLE_ID, 
-            TABLE_IDX, 
-            INPUT_TOKENS, 
-            OUTPUT_TOKENS, 
-            REQUEST_TIME, 
-            STREAM
-        )
 
         TYPE_HEADER_STRUCTURE = (
             ARTICLE_ID,

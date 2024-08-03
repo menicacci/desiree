@@ -52,40 +52,20 @@ def wrong_claims_prc(data_dir: str):
     return list(claims_correctness_prc.items()), utils.divide_by_sum(ovr_crt, ovr_wrg)
 
 
-def create_stats_file(file_path, headers):
+def save(file_path: str, data_to_save: list, header: list):
     workbook = Workbook()
     sheet = workbook.active
 
-    for idx, header in enumerate(headers, start=1):
-        sheet.cell(row=1, column=idx, value=header)
+    for idx, header_name in enumerate(header, start=1):
+        sheet.cell(row=1, column=idx, value=header_name)
+
+    for row_idx, data_dict in enumerate(data_to_save, start=2):
+        for col_idx, key in enumerate(header, start=1):
+            sheet.cell(row=row_idx, column=col_idx, value=data_dict.get(key))
 
     workbook.save(file_path)
 
-
-def append_stat(file_path, data_dict):
-    workbook = openpyxl.load_workbook(file_path)
-    sheet = workbook.active
-
-    first_empty_row = sheet.max_row + 1
-
-    for idx, key in enumerate(data_dict.keys(), start=1):
-        sheet.cell(row=first_empty_row, column=idx, value=data_dict[key])
-
-    workbook.save(file_path)
-    
-
-def save_stats(dir: str):
-    stats_file_path = os.path.join(dir, Constants.Filenames.STATS)
-    create_stats_file(stats_file_path, Constants.ColumnHeaders.STATS_HEADER_STRUCTURE)
-
-    stats_dir = os.path.join(dir, Constants.Directories.STATS)
-    for file_name in os.listdir(stats_dir):
-        file_path = os.path.join(stats_dir, file_name)
-        file_stats = utils.load_json(file_path)
-
-        append_stat(stats_file_path, file_stats)
-
-
+# ToDo: Refactor to make it indipendent from the table types
 def write_ground_truth(gt_file_path: str, output_dir: str):
     utils.check_path(output_dir)
 
@@ -133,19 +113,22 @@ def agglomerate_results(gt_dict, outcome_dict):
     return common_elements
 
 
-def compare_multiple_results(gt_path: str, output_dirs: list[tuple[str, int]], compare_function, save_path: str, opts=None):
-    gt_result = read_model_output(gt_path)
+def compare_multiple_results(
+        gt_path: str, 
+        output_dirs: list[str],
+        save_path: str,
+        compare_function,
+        stat_file_name=Constants.Filenames.STATS,
+        opts=None
+):
+    gt_results = read_model_output(gt_path)
 
-    for dir, test_idx in output_dirs:
-        save_results_path = os.path.join(save_path, f"{os.path.basename(dir)}_{test_idx}")
-        compare_result(gt_result, os.path.join(dir, str(test_idx)), compare_function, save_results_path, opts)
+    for output_dir in output_dirs:
+        save_results_path = os.path.join(save_path, os.path.basename(output_dir))
+        answer_path = os.path.join(output_dir, Constants.Directories.ANSWERS)
 
+        stats_path = os.path.join(output_dir, stat_file_name)
+        results = read_model_output(answer_path)
+        agg_results = agglomerate_results(gt_results, results)
 
-def compare_result(gt_results: dict, output_dir: str, compare_function, save_path: str, opts=None):
-    answer_path = os.path.join(output_dir, Constants.Directories.ANSWERS)
-    stats_path = os.path.join(output_dir, Constants.Filenames.STATS)
-
-    results = read_model_output(answer_path)
-    agg_results = agglomerate_results(gt_results, results)
-
-    compare_function(agg_results, stats_path, save_path, opts)
+        compare_function(agg_results, stats_path, save_results_path, opts)

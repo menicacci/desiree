@@ -1,13 +1,13 @@
 import os
 from scripts import utils
 from scripts.constants import Constants
-from scripts.llm.constants import LlmConstants
+from scripts.llm.constants import LlmConstants, LlmStructures
 
 
 def generate_req_directories(request_path):
     req_dirs = [
         os.path.join(request_path, req_dir) 
-        for req_dir in LlmConstants.Structures.LLM_DIRS
+        for req_dir in LlmStructures.LLM_DIRS
     ]
     
     for dir in req_dirs:
@@ -15,12 +15,9 @@ def generate_req_directories(request_path):
 
 
 def get_req_directories(request_path):
-    req_dirs = [
-        os.path.join(request_path, req_dir) 
-        for req_dir in LlmConstants.Structures.LLM_DIRS
+    return [
+        os.path.join(request_path, dir) for dir in LlmStructures.LLM_DIRS
     ]
-
-    return req_dirs
 
 
 def generate_main_req_directory(request_path: str) -> bool:

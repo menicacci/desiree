@@ -10,7 +10,7 @@ from scripts import utils, claim, stats
 def compare_table_types(results: dict, stats_path: str, save_path: str, opts=None):
     utils.check_path(save_path)
 
-    types = TableConstants.Types.TYPES if opts is None else opts[TableConstants.Attributes.TYPES]
+    types = TableConstants.Types.CONTENT_TYPES if opts is None else opts[TableConstants.Attributes.TYPES]
     
     # save results for each table type
     range_table_types = range(len(types))
@@ -19,11 +19,7 @@ def compare_table_types(results: dict, stats_path: str, save_path: str, opts=Non
     
     input_tokens = utils.process_excel_columns(
         stats_path, 
-        [
-            Constants.ColumnHeaders.ARTICLE_ID,
-            Constants.ColumnHeaders.TABLE_IDX,
-            Constants.ColumnHeaders.INPUT_TOKENS
-        ],
+        TableConstants.ColumnHeaders.PROCESS_COLUMN_STRUCTURE,
         lambda column_values: {f"{value[0]}_{value[1]}": value[2] for value in column_values}
     )
     

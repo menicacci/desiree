@@ -1,5 +1,3 @@
-# code inspired from: @mahmoudhage21
-
 import os
 import time
 import json
@@ -12,8 +10,9 @@ from openai import AzureOpenAI
 from tenacity import retry, stop_after_attempt, wait_fixed, wait_random
 from scripts import utils
 from scripts.llm.constants import LlmConstants
-from scripts.llm import prompt, llm_utils
+from scripts.llm import prompt, llm_utils, llm_stats
 
+# code inspired from: @mahmoudhage21
 
 class ParallelAPIRequesterConfig(BaseModel):
     model: str
@@ -128,8 +127,8 @@ class ParallelAPIRequester:
             time.sleep(60 / self.request_rate_limit)
 
     
-    def run(self, messages_dict, directory_path: str):
-        (answers_dir, output_dir, stats_dir) = llm_utils.get_req_directories(directory_path)
+    def run(self, request_path: str, prompts: list):
+        (answers_dir, output_dir, stats_dir) = llm_utils.get_req_directories(request_path)
 
         request_results = []
         api_original_prompts = []
@@ -144,7 +143,7 @@ class ParallelAPIRequester:
                     self.send, 
                     item[LlmConstants.Attributes.API_MSG],
                     os.path.join(answers_dir, f"{item[LlmConstants.Attributes.REQ_ID]}.txt")
-                ): item for item in messages_dict
+                ): item for item in prompts
             }
             
             for future in as_completed(future_to_info):
@@ -163,10 +162,14 @@ class ParallelAPIRequester:
                 except Exception as e:
                     req_exc_counter += 1
 
-                    result = {LlmConstants.Attributes.REQ_ID: future_to_info[future][LlmConstants.Attributes.REQ_ID]}
+                    result = {
+                        LlmConstants.Attributes.REQ_ID: future_to_info[future][LlmConstants.Attributes.REQ_ID]
+                    }
                     result.update({"response": f"Error processing message: {str(e)}"})
-                    result.update({LlmConstants.Attributes.REQ_SUCCESSFUL: True})
+                    result.update({LlmConstants.Attributes.REQ_SUCCESSFUL: False})
+                    
                     request_results.append(result)
+                    api_original_prompts.append(None)
                 
         llm_utils.save_results(stats_dir, request_results)
         llm_utils.save_results(output_dir, api_original_prompts)
@@ -175,6 +178,8 @@ class ParallelAPIRequester:
         hours, remainder = divmod(elapsed_time, 3600)
         minutes, seconds = divmod(remainder, 60)
         time_taken = f"{int(hours)}:{int(minutes)}:{int(seconds)}"
+
+        llm_stats.save_request_stats(request_path)
 
         return {
             LlmConstants.Attributes.REQ_RESULTS: request_results,

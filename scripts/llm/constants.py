@@ -20,10 +20,17 @@ class LlmConstants:
         REQ_SUCCESSFUL = "request_successful"
         REQ_TIME = "request_time"
 
-    
-    class Structures:
-        LLM_DIRS = [
-            Constants.Directories.ANSWERS,
-            Constants.Directories.OUTPUT,
-            Constants.Directories.STATS
-        ]
+
+class LlmStructures:
+    LLM_DIRS = (
+        Constants.Directories.ANSWERS,
+        Constants.Directories.OUTPUT,
+        Constants.Directories.STATS
+    )
+
+    STATS_HEADER_STRUCTURE = (
+        LlmConstants.Attributes.REQ_ID,
+        LlmConstants.Attributes.INP_TOKS,
+        LlmConstants.Attributes.OUT_TOKS,
+        LlmConstants.Attributes.REQ_TIME
+    )

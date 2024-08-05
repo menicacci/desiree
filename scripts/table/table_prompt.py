@@ -4,8 +4,8 @@ import copy
 from scripts import utils
 from scripts.constants import Constants
 from scripts.table import table_utils
-from scripts.table.constants import TableConstants
-from scripts.llm import prompt, llm_utils
+from scripts.table.llm_constants import TableConstants
+from scripts.llm import llm_prompt, llm_utils
 
 
 def build_input_msg(input_msg, table_data, input_structure):
@@ -36,11 +36,11 @@ class TablePrompts:
                 test_info,
                 test_info_path
             )
-            prompt.save(messagges_path, request_path)
+            llm_prompt.save(messagges_path, request_path)
 
         elif already_existed:
             test_info = utils.load_json(test_info_path)
-            messagges_path = prompt.retrieve_original_prompt(
+            messagges_path = llm_prompt.retrieve_original_prompt(
                 request_path, 
                 test_info[TableConstants.Attributes.MSGS_PATH]
             )
@@ -51,7 +51,7 @@ class TablePrompts:
         self.request_path = request_path
         self.tables_path = test_info[TableConstants.Attributes.TABLES_PATH]
 
-        self.msgs_structure = prompt.get_structure(messagges_path)
+        self.msgs_structure = llm_prompt.get_structure(messagges_path)
         msgs_data = utils.load_json(os.path.join(messagges_path, Constants.Filenames.MSG_INFO))
         self.input_structure = msgs_data[TableConstants.PromptAttributes.INPUT_STRUCTURE]
         self.input_msg = msgs_data[TableConstants.PromptAttributes.INPUT_MSG]
@@ -87,7 +87,7 @@ class TablePrompts:
             table_data = tables[article_id][int(table_idx)]
 
             prompts.append(
-                prompt.gen_prompt_dict(
+                llm_prompt.gen_prompt_dict(
                     table_id, 
                     self.build(table_data)
                 )

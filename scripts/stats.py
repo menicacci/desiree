@@ -2,7 +2,6 @@ import os
 from scripts import utils, claim
 from scripts.constants import Constants
 import pandas as pd
-import openpyxl
 from openpyxl import Workbook
 
 

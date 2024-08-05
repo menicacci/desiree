@@ -3,7 +3,7 @@ import re
 import shutil
 import tiktoken
 from scripts.constants import Constants
-from scripts.llm.constants import LlmConstants
+from scripts.llm.llm_constants import LlmConstants
 from scripts import utils
 
 

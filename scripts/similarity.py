@@ -1,5 +1,5 @@
-from scripts import embedding
-from scripts.utils import detect_number, remove_items, find_substrings, fuzzy_string_similarity
+from scripts import embedding, utils
+
 
 class Similarity:
 
@@ -14,8 +14,8 @@ class Similarity:
 
     
     def get_similarity(self, str_1: str, str_2: str) -> float:
-        if detect_number(str_1) and detect_number(str_2):
-            return fuzzy_string_similarity(str_1, str_2) - self.number_threshold
+        if utils.detect_number(str_1) and utils.detect_number(str_2):
+            return utils.fuzzy_string_similarity(str_1, str_2) - self.number_threshold
         else:
             if self.use_embeddings:
                 similarity_score = embedding.compute_similarity(
@@ -24,7 +24,7 @@ class Similarity:
                     text_1=str_1,
                     text_2=str_2)
             else:
-                similarity_score = fuzzy_string_similarity(str_1, str_2)
+                similarity_score = utils.fuzzy_string_similarity(str_1, str_2)
 
             return similarity_score - self.text_threshold
 
@@ -46,20 +46,20 @@ class Similarity:
         for input_string in found:
             similar_strings[input_string] = [max(similar_strings[input_string], key=lambda x: self.get_similarity(input_string, x))]
         
-        input_list = remove_items(input_list, found)
+        input_list = utils.remove_items(input_list, found)
         found.clear()
 
         for input_string in input_list:
-            similar_substrings = find_substrings(input_string, search_list, self.get_similarity)    
+            similar_substrings = utils.find_substrings(input_string, search_list, self.get_similarity)    
             if len(similar_strings) > 0:
                 found.add(input_string)
                 similar_strings[input_string] = similar_substrings
 
-        input_list = remove_items(input_list, found)
+        input_list = utils.remove_items(input_list, found)
         found.clear()
 
         for search_string in search_list:
-            similar_substrings = find_substrings(search_string, input_list, self.get_similarity)
+            similar_substrings = utils.find_substrings(search_string, input_list, self.get_similarity)
             for string in similar_substrings:
                 found.add(string)
                 similar_strings[string] = [search_string]

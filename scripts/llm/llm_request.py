@@ -9,8 +9,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from openai import AzureOpenAI
 from tenacity import retry, stop_after_attempt, wait_fixed, wait_random
 from scripts import utils
-from scripts.llm.constants import LlmConstants
-from scripts.llm import prompt, llm_utils, llm_stats
+from scripts.llm.llm_constants import LlmConstants
+from scripts.llm import llm_prompt, llm_utils, llm_stats
 
 # code inspired from: @mahmoudhage21
 
@@ -79,7 +79,7 @@ class ParallelAPIRequester:
             before_sleep= lambda retry_state: print("Retrying..."),
             retry_error_callback=handle_last_retry_error)
     def send(self, system_user_message: List, save_path: str):
-        estimated_tokens = prompt.num_tokens_request_approx(system_user_message)
+        estimated_tokens = llm_prompt.num_tokens_request_approx(system_user_message)
         self.request_semaphore.acquire()
         
         start_time = time.time()

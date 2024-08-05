@@ -3,7 +3,7 @@ import shutil
 import pickle
 import pandas as pd
 from scripts.constants import Constants
-from scripts.table.constants import TableConstants
+from scripts.table.llm_constants import TableConstants
 from scripts import utils, claim, stats
 
 

@@ -1,7 +1,7 @@
 import os
 from scripts import utils
 from scripts.constants import Constants
-from scripts.llm.constants import LlmConstants, LlmStructures
+from scripts.llm.llm_constants import LlmConstants, LlmStructures
 
 
 def generate_req_directories(request_path):

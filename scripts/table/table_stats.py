@@ -2,9 +2,9 @@ import os
 import pandas as pd
 from scripts import stats
 from scripts.constants import Constants
-from scripts.llm.constants import LlmConstants
+from scripts.llm.llm_constants import LlmConstants
 from scripts.table import table_types
-from scripts.table.constants import TableConstants
+from scripts.table.llm_constants import TableConstants
 
 
 def convert_stats(request_path: str):

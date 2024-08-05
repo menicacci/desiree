@@ -1,7 +1,7 @@
 import os
 from scripts import stats, utils
 from scripts.constants import Constants
-from scripts.llm.constants import LlmConstants, LlmStructures
+from scripts.llm.llm_constants import LlmConstants, LlmStructures
 
 
 def get_request_stats(request_path: str):

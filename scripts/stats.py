@@ -3,6 +3,7 @@ from scripts import utils, claim
 from scripts.constants import Constants
 import pandas as pd
 from openpyxl import Workbook
+from scripts.llm import llm_utils
 
 
 def get_claim_types(data_dir):
@@ -64,52 +65,23 @@ def save(file_path: str, data_to_save: list, header: list):
 
     workbook.save(file_path)
 
-# ToDo: Refactor to make it indipendent from the table types
+
 def write_ground_truth(gt_file_path: str, output_dir: str):
     utils.check_path(output_dir)
 
     data = pd.read_excel(gt_file_path, engine='odf', dtype={h: str for h in Constants.ColumnHeaders.TYPE_HEADER_STRUCTURE})
     for _, row in data.iterrows():
-        article_id, table_idx, table_type = [row[header_attr] for header_attr in Constants.ColumnHeaders.TYPE_HEADER_STRUCTURE]
+        request_id, output = [row[header_attr] for header_attr in Constants.ColumnHeaders.TYPE_HEADER_STRUCTURE]
 
-        file_name = f"{article_id}_{table_idx}.txt"
-        file_content = str(table_type)
-
-        with open(os.path.join(output_dir, file_name), 'w') as file:
-            file.write(file_content)
+        utils.write_file(str(output), os.path.join(output_dir, f"{request_id}.txt"))
 
 
-def read_model_output(output_dir: str):
-    results = {}
-
-    for file_name in os.listdir(output_dir):
-        if file_name.endswith(".txt"):
-            article_id, table_idx = utils.split_table_string(file_name)
-            
-            with open(os.path.join(output_dir, file_name), 'r') as file:
-                file_content = int(file.read().strip())
-            
-            if article_id not in results:
-                results[article_id] = {}
-            results[article_id][int(table_idx)] = file_content
-
-    return results
-
-
-def agglomerate_results(gt_dict, outcome_dict):
-    common_elements = {}
-    
-    for article_id, article_tables_dict in gt_dict.items():
-        if article_id not in outcome_dict:
-            continue
-
-        for table_idx, gt_output in article_tables_dict.items():
-            if table_idx not in outcome_dict[article_id]:
-                continue
-
-            common_elements[f"{article_id}_{table_idx}"] = (gt_output, outcome_dict[article_id][table_idx])
-                
-    return common_elements
+def agglomerate_results(ground_truth_answers: dict, model_output: dict):
+    return {
+        request_id: (gt_answer, model_output[request_id])
+        for request_id, gt_answer in ground_truth_answers.items()
+        if request_id in model_output
+    }
 
 
 def compare_multiple_results(
@@ -120,14 +92,14 @@ def compare_multiple_results(
         stat_file_name=Constants.Filenames.STATS,
         opts=None
 ):
-    gt_results = read_model_output(gt_path)
+    gt_answers = llm_utils.read_model_output(gt_path)
 
     for output_dir in output_dirs:
         save_results_path = os.path.join(save_path, os.path.basename(output_dir))
         answer_path = os.path.join(output_dir, Constants.Directories.ANSWERS)
-
         stats_path = os.path.join(output_dir, stat_file_name)
-        results = read_model_output(answer_path)
-        agg_results = agglomerate_results(gt_results, results)
+        
+        results = llm_utils.read_model_output(answer_path)
+        agg_results = agglomerate_results(gt_answers, results)
 
         compare_function(agg_results, stats_path, save_results_path, opts)

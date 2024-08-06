@@ -20,6 +20,10 @@ class LlmConstants:
         REQ_SUCCESSFUL = "request_successful"
         REQ_TIME = "request_time"
 
+    class Properties:
+        RESPONSE_FILE_FORMAT = ".txt"
+        MESSAGE_FILE_FORMAT = ".txt"
+
 
 class LlmStructures:
     LLM_DIRS = (

@@ -4,7 +4,7 @@ import copy
 from scripts import utils
 from scripts.constants import Constants
 from scripts.table import table_utils
-from scripts.table.llm_constants import TableConstants
+from scripts.table.table_constants import TableConstants
 from scripts.llm import llm_prompt, llm_utils
 
 

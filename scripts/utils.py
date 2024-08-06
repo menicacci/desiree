@@ -18,14 +18,6 @@ def remove_new_line(input_string: str, replace_car: str):
     return input_string.replace("\n", replace_car)
 
 
-def split_table_string(table_string: str):
-    file_parts = table_string.split("_")
-    article_id = file_parts[0]
-    table_idx = int(file_parts[1].split(".")[0])
-
-    return article_id, table_idx
-
-
 def replace_placeholder(content, placeholder, value):
     placeholder = "{" + placeholder + "}"
     return content.replace(placeholder, value)
@@ -36,6 +28,18 @@ def check_path(path):
         os.makedirs(path)
         return False
     return True
+
+
+def object_to_dict(obj):
+    if hasattr(obj, "to_dict"):
+        return obj.to_dict()
+    elif hasattr(obj, "__dict__"):
+        return {key: object_to_dict(value) for key, value in obj.__dict__.items()}
+    elif isinstance(obj, (list, tuple, set)):
+        return [object_to_dict(item) for item in obj]
+    elif isinstance(obj, dict):
+        return {key: object_to_dict(value) for key, value in obj.items()}
+    return obj
 
 
 def divide_by_sum(a, b):
@@ -169,6 +173,9 @@ def read_html(html_file_path: str):
     
 
 def read_file(file_path):
+    if not os.path.exists(file_path):
+        raise FileNotFoundError()
+
     with open(file_path) as file:
         return file.read()
     

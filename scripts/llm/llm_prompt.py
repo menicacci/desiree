@@ -32,7 +32,7 @@ def message(role, content) -> dict:
 def get_structure(messages_path: str) -> list:
     msg_paths = []
     for file_name in os.listdir(messages_path):
-        if file_name.endswith(".txt"):
+        if file_name.endswith(LlmConstants.Properties.RESPONSE_FILE_FORMAT):
             msg_paths.append(os.path.join(messages_path, file_name))
 
     msg_paths.sort(key=lambda x: int(os.path.basename(x).split('_')[0]))
@@ -65,7 +65,10 @@ def read(prompt_path: str):
 
 def write(messages: list, save_path: str):
     for pos, message in enumerate(messages):
-        role_msg_path = os.path.join(save_path, f'{pos}_{message[Constants.MsgStructure.ROLE]}.txt')
+        role_msg_path = os.path.join(
+            save_path, 
+            f'{pos}_{message[Constants.MsgStructure.ROLE]}{LlmConstants.Properties.RESPONSE_FILE_FORMAT}'
+        )
 
         with open(role_msg_path, "w") as file:
             file.write(message[Constants.MsgStructure.CONTENT])

@@ -2,6 +2,7 @@ import json
 import os
 from scripts import utils
 from scripts.constants import Constants
+from scripts.llm import llm_utils
 
 
 def load_tables_from_json(json_file):
@@ -56,3 +57,29 @@ def check_processed_tables(json_file_path: str, tables_directory_path: str):
                     
     utils.write_json(data, json_file_path)
     return tables_to_process
+
+
+def split_table_string(request_id: str):
+    file_parts = request_id.split("_")
+    article_id = file_parts[0]
+    table_idx = int(file_parts[1])
+
+    return article_id, table_idx
+
+
+def get_tables_from_model_output(model_output: dict) -> dict:
+    table_results = {}
+    for request_id, output in model_output.items():
+        article_id, table_idx = split_table_string(request_id)
+
+        if article_id not in table_results:
+            table_results[article_id] = {}
+
+        table_results[article_id][table_idx] = output
+    
+    return table_results
+
+
+def read_model_output(request_dir: str) -> dict:
+    model_output = llm_utils.read_model_output(request_dir)
+    return get_tables_from_model_output(model_output)

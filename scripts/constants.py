@@ -66,15 +66,13 @@ class Constants:
         VALUE = "value"
         VALUES = "values"
 
-    # ToDo: Refactor to make it indipendent from table type
+
     class ColumnHeaders:
-        ARTICLE_ID = "article_id"
         OUTPUT = "output"
-        TABLE_IDX = "table_idx"
+        REQUEST_ID = "request_id"
 
         TYPE_HEADER_STRUCTURE = (
-            ARTICLE_ID,
-            TABLE_IDX,
+            REQUEST_ID,
             OUTPUT
         )
 

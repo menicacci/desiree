@@ -3,11 +3,15 @@ import shutil
 import pickle
 import pandas as pd
 from scripts.constants import Constants
-from scripts.table.llm_constants import TableConstants
+from scripts.table.table_constants import TableConstants
 from scripts import utils, claim, stats
+from scripts.table import table_utils
 
 
 def compare_table_types(results: dict, stats_path: str, save_path: str, opts=None):
+    # Turn the results in the table format
+    table_results = table_utils.get_tables_from_model_output(results)
+    
     utils.check_path(save_path)
 
     types = TableConstants.Types.CONTENT_TYPES if opts is None else opts[TableConstants.Attributes.TYPES]
@@ -26,7 +30,7 @@ def compare_table_types(results: dict, stats_path: str, save_path: str, opts=Non
     confusion_matrix = [[0] * len(range_table_types) for _ in range_table_types]
     confusion_matrix_ids = [[[] for _ in range_table_types] for _ in range_table_types]
 
-    for table_key, (gt_result, outcome) in results.items():
+    for table_key, (gt_result, outcome) in table_results.items():
         tokens = int(input_tokens[table_key])
         data_model[TableConstants.Types.TOT_TOKENS][gt_result] += tokens
         data_model[TableConstants.Types.NUM_TABLES][gt_result] += 1
@@ -93,14 +97,14 @@ def get_types_from_claims(output_dir: str):
             with open(os.path.join(temp_dir, filename_txt), "w") as file:
                 file.write(str(type % len(table_types)))
 
-    results = stats.read_model_output(temp_dir)
+    results = table_utils.read_model_output(temp_dir)
     shutil.rmtree(temp_dir)
 
     return results
 
 
 def check_claims_types(gt_answer_path, output_path, save_path):
-    gt_res = stats.read_model_output(gt_answer_path)
+    gt_res = table_utils.read_model_output(gt_answer_path)
     result = get_types_from_claims(output_path)
     agg_results = stats.agglomerate_results(gt_res, result)
 

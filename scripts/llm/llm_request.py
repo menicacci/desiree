@@ -103,7 +103,7 @@ class ParallelAPIRequester:
                 self.input_token_count += response.usage.prompt_tokens
                 self.output_token_count += response.usage.completion_tokens
 
-                model_response = llm_utils.object_to_dict(response)
+                model_response = utils.object_to_dict(response)
                 request_info = {
                     LlmConstants.Attributes.REQ_TIME: request_time,
                     LlmConstants.Attributes.INP_TOKS: response.usage.prompt_tokens,

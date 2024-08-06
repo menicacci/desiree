@@ -28,18 +28,6 @@ def generate_main_req_directory(request_path: str) -> bool:
     return True
 
 
-def object_to_dict(obj):
-    if hasattr(obj, "to_dict"):
-        return obj.to_dict()
-    elif hasattr(obj, "__dict__"):
-        return {key: object_to_dict(value) for key, value in obj.__dict__.items()}
-    elif isinstance(obj, (list, tuple, set)):
-        return [object_to_dict(item) for item in obj]
-    elif isinstance(obj, dict):
-        return {key: object_to_dict(value) for key, value in obj.items()}
-    return obj
-
-
 def save_results(dir_path, request_results):
     for result in request_results:
         utils.write_json(result, os.path.join(dir_path, f"{result[LlmConstants.Attributes.REQ_ID]}.json"))
@@ -48,3 +36,18 @@ def save_results(dir_path, request_results):
 def get_successful_request_ids(req_path):
     answer_path = os.path.join(req_path, Constants.Directories.ANSWERS)
     return utils.get_file_names(answer_path)
+
+
+def read_model_output(answer_dir: str) -> dict:
+    if not os.path.exists(answer_dir):
+        return
+    
+    model_output = {}
+    output_file_name = utils.get_file_names(answer_dir, LlmConstants.Properties.RESPONSE_FILE_FORMAT)
+
+    for request_id in output_file_name:
+        model_output[request_id] = utils.read_file(
+            os.path.join(request_id, LlmConstants.Properties.RESPONSE_FILE_FORMAT)
+        )
+
+    return model_output

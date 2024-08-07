@@ -57,7 +57,6 @@ class Constants:
         SIZE = "size"
         SPECS = "specifications"
         TABLE = "table"
-        TABLES_PATH = "tables_path"
         TABLE_PROC = "table_processed"
         TABLES_TO_PROC = "table_to_process"
         TEST_DATA = "test_data"

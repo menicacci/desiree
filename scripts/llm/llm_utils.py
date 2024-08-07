@@ -63,3 +63,12 @@ def read_model_output(answer_dir: str) -> dict:
         )
 
     return model_output
+
+
+def get_request_info(request_path: str) -> dict:
+    request_info_path = os.path.join(request_path, Constants.Filenames.TEST_INFO)
+    
+    if not os.path.exists(request_info_path):
+        raise FileNotFoundError(request_info_path)
+
+    return utils.load_json(request_info_path)

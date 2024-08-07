@@ -57,21 +57,22 @@ def check_claim(claim: str):
     return None
 
 
-def extract_claims(txt_claims: list):
+def extract_claims(answer: str):
     correct_claims, wrong_claims = [], []
 
-    for txt_claim in txt_claims:
-        if txt_claim.endswith('\n'):
-            txt_claim = txt_claim[:-1]
+    str_claims = answer.splitlines()
+    for str_claim in str_claims:
+        if str_claim.endswith('\n'):
+            str_claim = str_claim[:-1]
 
-        if txt_claim == '':
+        if str_claim == '':
             continue
 
-        processed_claim = check_claim(txt_claim)
+        processed_claim = check_claim(str_claim)
         if processed_claim is not None:
             correct_claims.append(processed_claim)
         else:
-            wrong_claims.append(txt_claim)
+            wrong_claims.append(str_claim)
 
     return correct_claims, wrong_claims
 

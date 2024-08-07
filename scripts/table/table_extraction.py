@@ -125,11 +125,8 @@ def save_tables_to_json(extracted_tables_map, output_file):
     utils.write_json(filtered_tables_map, output_file)
 
 
-def extract_and_save_tables(articles_directory: str, save_path: str, file_name: str):
+def extract_and_save_tables(articles_directory: str, save_path: str):
     articles_tables_map = extract_tables_from_directory(articles_directory)
-
-    utils.check_path(save_path)
-    file_name = os.path.join(save_path, file_name)
 
     num_tables = 0
     for article_id, article_tables in articles_tables_map.items():
@@ -138,7 +135,7 @@ def extract_and_save_tables(articles_directory: str, save_path: str, file_name: 
         print(f"Article ID: {article_id} - # Tables Found: {num_article_tables}")
     print(f"\nTotal number of tables found: {num_tables}")
 
-    save_tables_to_json(articles_tables_map, file_name)
+    save_tables_to_json(articles_tables_map, save_path)
     
 
 def check_extracted_data(tables_file_path: str):

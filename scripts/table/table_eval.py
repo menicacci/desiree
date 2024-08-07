@@ -2,6 +2,7 @@ from scripts import claim, utils
 from scripts.table import table_utils
 from scripts.similarity import Similarity
 from scripts.constants import Constants
+from scripts.table.table_constants import TableConstants
 import os
 import pandas as pd
 from io import StringIO
@@ -27,7 +28,7 @@ def evaluate(similarities, table_values, values_extracted):
 
 
 def evaluate_table(sim: Similarity, html_table: str, claim_values: dict):
-    table_values, _ = claim.get_table_values(html_table)
+    table_values, _ = table_utils.get_table_values(html_table)
     unique_table_values = utils.remove_duplicates(table_values)
 
     claim_specs, claim_results, values_extracted = claim.count_specifications(claim_values)
@@ -37,31 +38,24 @@ def evaluate_table(sim: Similarity, html_table: str, claim_values: dict):
     return evaluate(similarities, table_values, values_extracted)
 
 
-def get_table_and_claim(extracted_tables: dict, extracted_claims: dict, article_id: str, table_idx: str):
-    html_table = extracted_tables[article_id][int(table_idx)][Constants.Attributes.TABLE]
-    claim_dict = extracted_claims[article_id][table_idx][Constants.Attributes.EXTRACTED_CLAIMS]
-
-    return html_table, claim_dict
-
-
-def evaluate_extracted_articles(tables_path: str, data_dir: str, override: bool, use_embeddings: bool):
-    results_file_path = os.path.join(data_dir, Constants.Filenames.RESULTS)
+def evaluate_extracted_articles(tables_path: str, request_path: str, override: bool, use_embeddings: bool):
+    results_file_path = os.path.join(request_path, Constants.Filenames.RESULTS)
     
     if not override:
         results = utils.load_list(results_file_path)
         if results is not None:
             return results
 
-    extracted_claims = claim.get_claims(data_dir)
+    extracted_claims = claim.get_claims(request_path)
     extracted_tables = table_utils.load_tables_from_json(tables_path)
 
     evaluation = {}
     sim = Similarity(use_embeddings=use_embeddings)
-    for article_id in extracted_claims.keys():
-        for table_idx in extracted_claims[article_id].keys():
-            html_table, claim_dict = get_table_and_claim(extracted_tables, extracted_claims, article_id, table_idx)
+    for request_id, claims in extracted_claims.items():
+        html_table = table_utils.get_original_table(extracted_tables, request_id)
+        claim_dict = claims[Constants.Attributes.EXTRACTED_CLAIMS]
 
-            evaluation[f"{article_id}_{table_idx}"] = evaluate_table(sim, html_table, claim_dict)
+        evaluation[request_id] = evaluate_table(sim, html_table, claim_dict)           
 
     results = list(evaluation.items())
 
@@ -69,15 +63,16 @@ def evaluate_extracted_articles(tables_path: str, data_dir: str, override: bool,
     return results
 
 
-def evaluate_extracted_article(tables_path: str, data_dir: str, article_id: str, table_idx: int, use_embeddings=False):
-    extracted_claims = claim.get_claims(data_dir)
+def evaluate_extracted_table(tables_path: str, request_path: str, request_id: str, use_embeddings=False):
+    extracted_claims = claim.get_claims(request_path)
     extracted_tables = table_utils.load_tables_from_json(tables_path)
 
     sim = Similarity(use_embeddings)
 
-    html_table, claim_dict = get_table_and_claim(extracted_tables, extracted_claims, article_id, table_idx)
+    html_table = table_utils.get_original_table(extracted_tables, request_id)
+    claim_dict = extracted_claims[request_id][Constants.Attributes.EXTRACTED_CLAIMS]
 
-    table_values, _ = claim.get_table_values(html_table)
+    table_values, _ = table_utils.get_table_values(html_table)
     unique_table_values = utils.remove_duplicates(table_values)
 
     _, _, values_extracted = claim.count_specifications(claim_dict)

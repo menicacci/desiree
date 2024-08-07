@@ -6,50 +6,28 @@ from openpyxl import Workbook
 from scripts.llm import llm_utils
 
 
-def get_claim_types(data_dir):
-    claims_path = os.path.join(data_dir, Constants.Filenames.CLAIMS)
-    extracted_claims = utils.load_json(claims_path)
-
-    data_claims, outcome_claims, wrong_claims = [], [], []
-
-    for article_id, article_claims in extracted_claims.items():
-        for table_id, table_claims in article_claims.items():
-            table_key = f"{article_id}_{table_id}"
-            claim_type = claim.check_claim_type(table_claims)
-
-            if claim_type is None:
-                wrong_claims.append(table_key)
-            elif claim_type:
-                outcome_claims.append(table_key)
-            else:
-                data_claims.append(table_key)
-    
-    return outcome_claims, data_claims, wrong_claims
-
-
 def wrong_claims_prc(data_dir: str):
     model_answers_path = os.path.join(data_dir, Constants.Directories.ANSWERS)
     extracted_claims_path = os.path.join(data_dir, Constants.Filenames.CLAIMS)
-    extracted_claims = claim.extract_answers(model_answers_path, extracted_claims_path)
+    extracted_claims = claim.extract_claims_from_answers(model_answers_path, extracted_claims_path)
 
     claims_correctness_prc = {}
-    ovr_crt = 0
-    ovr_wrg = 0
+    ovr_c = 0
+    ovr_w = 0
 
-    for article_id, tables_dict in extracted_claims.items():
-        for table_id, table_dict in tables_dict.items():
-            correct_table_claims = table_dict[Constants.Attributes.EXTRACTED_CLAIMS]
-            wrong_table_claims = table_dict[Constants.Attributes.WRONG_CLAIMS]
+    for request_id, claims in extracted_claims.items():
+        correct_claims = claims[Constants.Attributes.EXTRACTED_CLAIMS]
+        wrong_claims = claims[Constants.Attributes.WRONG_CLAIMS]
 
-            table_crt = len(correct_table_claims)
-            table_wrg = len(wrong_table_claims)
+        num_c_claims = len(correct_claims)
+        num_w_claims = len(wrong_claims)
 
-            claims_correctness_prc[f"{article_id}_{table_id}"] = utils.divide_by_sum(table_crt, table_wrg)
+        claims_correctness_prc[request_id] = utils.divide_by_sum(num_c_claims, num_w_claims)
 
-            ovr_crt += table_crt
-            ovr_wrg += table_wrg
+        ovr_c += num_c_claims
+        ovr_w += num_w_claims
 
-    return list(claims_correctness_prc.items()), utils.divide_by_sum(ovr_crt, ovr_wrg)
+    return list(claims_correctness_prc.items()), utils.divide_by_sum(ovr_c, ovr_w)
 
 
 def save(file_path: str, data_to_save: list, header: list):

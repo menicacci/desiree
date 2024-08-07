@@ -89,7 +89,7 @@ def compare_table_types(table_results: dict, stats_path: str, save_path: str, op
 def get_types_from_claims(output_dir: str):
     claim.get_claims(output_dir)
     
-    claims_classified = stats.get_claim_types(output_dir)
+    claims_classified = claim.get_claim_types(output_dir)
     table_types = Constants.Claims.CLAIM_STRUCTURES
 
     temp_dir = os.path.join(output_dir, Constants.Directories.TEMP)

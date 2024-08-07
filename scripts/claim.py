@@ -1,16 +1,8 @@
 import re
 import os
-import pandas as pd
 from scripts import utils
 from scripts.constants import Constants
-from io import StringIO
-
-
-def get_claims(data_dir: str):
-    model_answers_path = os.path.join(data_dir, Constants.Directories.ANSWERS)
-    extracted_claims_path = os.path.join(data_dir, Constants.Filenames.CLAIMS)
-
-    return extract_answers(model_answers_path, extracted_claims_path)
+from scripts.llm import llm_utils
 
 
 def check_tuple(input_str: str):
@@ -84,13 +76,13 @@ def extract_claims(txt_claims: list):
     return correct_claims, wrong_claims
 
 
-def count_specifications(table_claims):
+def count_specifications(extracted_claims):
     specs_map = {}
     results_map = {}
 
     all_values = []
 
-    for claim in table_claims:
+    for claim in extracted_claims:
         for spec in claim[Constants.Attributes.SPECS]:
             spec_name = spec[Constants.Attributes.NAME]
             spec_value = spec[Constants.Attributes.VALUE]
@@ -131,90 +123,37 @@ def count_specifications(table_claims):
     return specs_map, results_map, all_values
 
 
-def combine_column_names(columns):
-    if columns is None or type(columns[0]) is int:
-        return []
+def extract_claims_from_answer(model_answer: str):
+    extracted_claims, wrong_claims = extract_claims(model_answer)
 
-    combined_names = []
-    for col in columns:
-        if type(col) is tuple:
-            name_parts = [part for part in col if 'Unnamed' not in part]
-            combined_names.append(' '.join(name_parts))
-        else:
-            combined_names.append(col)
-
-    return combined_names
+    return {
+        Constants.Attributes.EXTRACTED_CLAIMS: extracted_claims,
+        Constants.Attributes.WRONG_CLAIMS: wrong_claims
+    }
 
 
-def get_non_null_values(df):
-    non_null_values = []
-    for column in df.columns:
-        non_null_values.extend([value for value in df[column] if pd.notnull(value) and value != '-'])
-    return non_null_values
+def extract_claims_from_answers(answers_directory: str, json_path: str):    
+    model_output = llm_utils.read_model_output(answers_directory)
+
+    extracted_claims = {
+        request_id: extract_claims_from_answer(answer)
+        for request_id, answer in model_output.items()
+    }
+
+    utils.write_json(extracted_claims, json_path)
+    return extracted_claims
 
 
-def get_table_values(html_table):
-    try:
-        table = pd.read_html(StringIO(html_table))
-    except ValueError:
-        return [], []
+def get_claims(data_dir: str):
+    model_answers_path = os.path.join(data_dir, Constants.Directories.ANSWERS)
+    extracted_claims_path = os.path.join(data_dir, Constants.Filenames.CLAIMS)
 
-    column_names = []
-    table_values = []
-    for pd_table in table:
-        column_names += combine_column_names(pd_table.columns.tolist())
-        table_values += get_non_null_values(pd_table)
-
-    all_values = []
-    all_values.extend(utils.remove_unicodes(str(value)) for value in table_values)
-    all_values.extend(utils.remove_unicodes(str(value)) for value in column_names)
-
-    return all_values, table
+    return extract_claims_from_answers(model_answers_path, extracted_claims_path)
 
 
-def extract_table_answers(file_path: str):
-    try:
-        with open(file_path, 'r') as file:
-            txt_claims = file.readlines()
-
-            extracted_claims, wrong_claims = extract_claims(txt_claims)
-
-            return {
-                Constants.Attributes.EXTRACTED_CLAIMS: extracted_claims,
-                Constants.Attributes.WRONG_CLAIMS: wrong_claims
-            }
-        
-    except FileNotFoundError:
-        return {}
-
-
-def extract_answers(answers_directory: str, json_path: str):
-    claims_extracted = utils.load_json(json_path)
-    
-    if claims_extracted is not None:
-        return claims_extracted
-
-    answers_data = {}
-    for filename in os.listdir(answers_directory):
-        if filename.endswith(".txt"):
-            file_parts = filename.split("_")
-            if len(file_parts) == 2:
-                article_id = file_parts[0]
-                table_idx = int(file_parts[1].split(".")[0])
-                file_path = os.path.join(answers_directory, filename)
-
-                if article_id not in answers_data:
-                    answers_data[article_id] = {}
-
-                answers_data[article_id][table_idx] = extract_table_answers(file_path)
-
-    utils.write_json(answers_data, json_path)
-    return answers_data
-
-
-def check_claim_type(table_claims: dict) -> bool | None:
-    extracted_claims = table_claims.get(Constants.Attributes.EXTRACTED_CLAIMS, [])
-    wrong_claims = table_claims.get(Constants.Attributes.WRONG_CLAIMS, [])
+def check_claim_type(claims_dict: dict) -> bool | None:
+    extracted_claims = claims_dict.get(Constants.Attributes.EXTRACTED_CLAIMS, [])
+    wrong_claims = claims_dict.get(Constants.Attributes.WRONG_CLAIMS, [])
 
     total_extracted_claims = len(extracted_claims)
     total_wrong_claims = len(wrong_claims)
@@ -228,3 +167,21 @@ def check_claim_type(table_claims: dict) -> bool | None:
     )
 
     return data_claims_count < (total_extracted_claims / 2)
+
+
+def get_claim_types(request_path: str):
+    extracted_claims = get_claims(request_path)
+
+    data_claims, outcome_claims, wrong_claims = [], [], []
+
+    claim_type_mapping = {
+        None: wrong_claims,
+        True: outcome_claims,
+        False: data_claims
+    }
+
+    for request_id, claims in extracted_claims.items():
+        claim_type = check_claim_type(claims)
+        claim_type_mapping[claim_type].append(request_id)
+    
+    return outcome_claims, data_claims, wrong_claims

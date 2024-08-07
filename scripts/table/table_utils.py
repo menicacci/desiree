@@ -1,9 +1,12 @@
 import json
 import os
+import pandas as pd
+from io import StringIO
 from scripts import utils, stats
 from scripts.constants import Constants
 from scripts.llm import llm_utils
 from scripts.table import table_stats
+from scripts.table.table_constants import TableConstants
 
 
 def load_tables_from_json(json_file):
@@ -60,7 +63,7 @@ def check_processed_tables(json_file_path: str, tables_directory_path: str):
     return tables_to_process
 
 
-def split_table_string(request_id: str):
+def split_request_id(request_id: str):
     file_parts = request_id.split("_")
     article_id = file_parts[0]
     table_idx = int(file_parts[1])
@@ -68,10 +71,16 @@ def split_table_string(request_id: str):
     return article_id, table_idx
 
 
+def get_original_table(extracted_tables: dict, request_id: str):
+    article_id, table_id = split_request_id(request_id)
+
+    return extracted_tables[article_id][int(table_id)][TableConstants.Attributes.TABLE]
+
+
 def get_tables_from_model_output(model_output: dict) -> dict:
     table_results = {}
     for request_id, output in model_output.items():
-        article_id, table_idx = split_table_string(request_id)
+        article_id, table_idx = split_request_id(request_id)
 
         if article_id not in table_results:
             table_results[article_id] = {}
@@ -91,3 +100,44 @@ def agglomerate_results(ground_truth_answers: dict, model_output: dict):
 
 def convert_stats(request_path: str) -> str:
     return table_stats.convert(request_path)
+
+
+def combine_column_names(columns):
+    if columns is None or type(columns[0]) is int:
+        return []
+
+    combined_names = []
+    for col in columns:
+        if type(col) is tuple:
+            name_parts = [part for part in col if 'Unnamed' not in part]
+            combined_names.append(' '.join(name_parts))
+        else:
+            combined_names.append(col)
+
+    return combined_names
+
+
+def get_non_null_values(df):
+    non_null_values = []
+    for column in df.columns:
+        non_null_values.extend([value for value in df[column] if pd.notnull(value) and value != '-'])
+    return non_null_values
+
+
+def get_table_values(html_table):
+    try:
+        table = pd.read_html(StringIO(html_table))
+    except ValueError:
+        return [], []
+
+    column_names = []
+    table_values = []
+    for pd_table in table:
+        column_names += combine_column_names(pd_table.columns.tolist())
+        table_values += get_non_null_values(pd_table)
+
+    all_values = []
+    all_values.extend(utils.remove_unicodes(str(value)) for value in table_values)
+    all_values.extend(utils.remove_unicodes(str(value)) for value in column_names)
+
+    return all_values, table

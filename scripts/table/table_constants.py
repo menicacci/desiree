@@ -8,6 +8,7 @@ class TableConstants:
     class Attributes:
         MSGS_PATH = "messages_path"
         NUM_TABLE = "num_tables"
+        TABLE = "table"
         TABLES_PATH = "tables_path"
         TYPES = "types"
 

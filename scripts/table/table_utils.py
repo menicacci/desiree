@@ -1,8 +1,9 @@
 import json
 import os
-from scripts import utils
+from scripts import utils, stats
 from scripts.constants import Constants
 from scripts.llm import llm_utils
+from scripts.table import table_stats
 
 
 def load_tables_from_json(json_file):
@@ -81,5 +82,12 @@ def get_tables_from_model_output(model_output: dict) -> dict:
 
 
 def read_model_output(request_dir: str) -> dict:
-    model_output = llm_utils.read_model_output(request_dir)
-    return get_tables_from_model_output(model_output)
+    return llm_utils.read_model_output(request_dir)
+
+
+def agglomerate_results(ground_truth_answers: dict, model_output: dict):
+    return stats.agglomerate_results(ground_truth_answers, model_output)
+
+
+def convert_stats(request_path: str) -> str:
+    return table_stats.convert(request_path)

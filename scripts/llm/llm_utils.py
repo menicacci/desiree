@@ -28,9 +28,20 @@ def generate_main_req_directory(request_path: str) -> bool:
     return True
 
 
+def save_answer(save_path: str, answer: str):
+    utils.write_file(answer, f"{save_path}{LlmConstants.Properties.RESPONSE_FILE_FORMAT}")
+
+
 def save_results(dir_path, request_results):
     for result in request_results:
-        utils.write_json(result, os.path.join(dir_path, f"{result[LlmConstants.Attributes.REQ_ID]}.json"))
+        save_result(dir_path, result)
+
+
+def save_result(dir_path, request_result):
+    utils.write_json(
+        request_result, 
+        os.path.join(dir_path, f"{request_result[LlmConstants.Attributes.REQ_ID]}.json")
+    )
 
 
 def get_successful_request_ids(req_path):
@@ -46,8 +57,9 @@ def read_model_output(answer_dir: str) -> dict:
     output_file_name = utils.get_file_names(answer_dir, LlmConstants.Properties.RESPONSE_FILE_FORMAT)
 
     for request_id in output_file_name:
+        file_name = f"{request_id}{LlmConstants.Properties.RESPONSE_FILE_FORMAT}"
         model_output[request_id] = utils.read_file(
-            os.path.join(request_id, LlmConstants.Properties.RESPONSE_FILE_FORMAT)
+            os.path.join(answer_dir, file_name)
         )
 
     return model_output

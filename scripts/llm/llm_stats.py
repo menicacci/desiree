@@ -4,7 +4,7 @@ from scripts.constants import Constants
 from scripts.llm.llm_constants import LlmConstants, LlmStructures
 
 
-def get_request_stats(request_path: str):
+def get(request_path: str):
     stats_data = []
 
     stats_dir_path = os.path.join(request_path, Constants.Directories.STATS)
@@ -22,8 +22,8 @@ def get_request_stats(request_path: str):
     return stats_data
 
 
-def save_request_stats(request_path: str):
-    stats_data = get_request_stats(request_path)
+def save(request_path: str):
+    stats_data = get(request_path)
     stats_header = LlmStructures.STATS_HEADER_STRUCTURE
 
     stats_file_path = os.path.join(request_path, Constants.Filenames.STATS)

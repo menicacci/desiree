@@ -80,6 +80,9 @@ class ParallelAPIRequester:
             retry_error_callback=handle_last_retry_error)
     def send(self, system_user_message: List, save_path: str):
         estimated_tokens = llm_prompt.num_tokens_request_approx(system_user_message)
+        if estimated_tokens >= self.max_tokens:
+            raise Exception("Max Tokens limit reached")
+
         self.request_semaphore.acquire()
         
         start_time = time.time()
@@ -97,7 +100,7 @@ class ParallelAPIRequester:
                         )
                 
                 generated_response = response.choices[0].message.content
-                utils.write_file(generated_response, save_path)
+                llm_utils.save_answer(save_path, generated_response)
 
                 request_time = time.time() - start_time
                 self.input_token_count += response.usage.prompt_tokens
@@ -128,21 +131,18 @@ class ParallelAPIRequester:
 
     
     def run(self, request_path: str, prompts: list):
+        # Get the directories to save the request data
         (answers_dir, output_dir, stats_dir) = llm_utils.get_req_directories(request_path)
-
-        request_results = []
-        api_original_prompts = []
         
         start_time = time.time()
         req_ovr_counter = 0
         req_exc_counter = 0
-
         with ThreadPoolExecutor(max_workers=self.request_rate_limit) as executor:
             future_to_info = {
                 executor.submit(
                     self.send, 
                     item[LlmConstants.Attributes.API_MSG],
-                    os.path.join(answers_dir, f"{item[LlmConstants.Attributes.REQ_ID]}.txt")
+                    os.path.join(answers_dir, f"{item[LlmConstants.Attributes.REQ_ID]}")
                 ): item for item in prompts
             }
             
@@ -156,8 +156,8 @@ class ParallelAPIRequester:
                     result.update(req_id)
                     result.update({LlmConstants.Attributes.REQ_SUCCESSFUL: True})
 
-                    request_results.append(result)
-                    api_original_prompts.append(output)
+                    llm_utils.save_result(output_dir, output)
+                    llm_utils.save_result(stats_dir, result)
 
                 except Exception as e:
                     req_exc_counter += 1
@@ -168,21 +168,16 @@ class ParallelAPIRequester:
                     result.update({"response": f"Error processing message: {str(e)}"})
                     result.update({LlmConstants.Attributes.REQ_SUCCESSFUL: False})
                     
-                    request_results.append(result)
-                    api_original_prompts.append(None)
-                
-        llm_utils.save_results(stats_dir, request_results)
-        llm_utils.save_results(output_dir, api_original_prompts)
+                    llm_utils.save_result(stats_dir, result)
 
         elapsed_time = time.time() - start_time
         hours, remainder = divmod(elapsed_time, 3600)
         minutes, seconds = divmod(remainder, 60)
         time_taken = f"{int(hours)}:{int(minutes)}:{int(seconds)}"
 
-        llm_stats.save_request_stats(request_path)
+        llm_stats.save(request_path)
 
         return {
-            LlmConstants.Attributes.REQ_RESULTS: request_results,
             LlmConstants.Attributes.REQ_OVR_TIME: time_taken,
             LlmConstants.Attributes.REQ_OVR_COUNT: req_ovr_counter,
             LlmConstants.Attributes.REQ_EXC_COUNT: req_exc_counter

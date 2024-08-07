@@ -8,10 +8,7 @@ from scripts import utils, claim, stats
 from scripts.table import table_utils
 
 
-def compare_table_types(results: dict, stats_path: str, save_path: str, opts=None):
-    # Turn the results in the table format
-    table_results = table_utils.get_tables_from_model_output(results)
-    
+def compare_table_types(table_results: dict, stats_path: str, save_path: str, opts=None):    
     utils.check_path(save_path)
 
     types = TableConstants.Types.CONTENT_TYPES if opts is None else opts[TableConstants.Attributes.TYPES]
@@ -32,11 +29,18 @@ def compare_table_types(results: dict, stats_path: str, save_path: str, opts=Non
 
     for table_key, (gt_result, outcome) in table_results.items():
         tokens = int(input_tokens[table_key])
-        data_model[TableConstants.Types.TOT_TOKENS][gt_result] += tokens
-        data_model[TableConstants.Types.NUM_TABLES][gt_result] += 1
-        confusion_matrix[gt_result][outcome] += 1
-        confusion_matrix_ids[gt_result][outcome].append(table_key)
-        data_model[(TableConstants.Types.NUM_CORRECT if gt_result == outcome else TableConstants.Types.NUM_WRONG)][gt_result] += 1
+        gt_result_int = int(gt_result)
+        outcome_int = int(outcome)
+        
+        data_model[TableConstants.Types.TOT_TOKENS][gt_result_int] += tokens
+        data_model[TableConstants.Types.NUM_TABLES][gt_result_int] += 1
+        
+        confusion_matrix[gt_result_int][outcome_int] += 1
+        confusion_matrix_ids[gt_result_int][outcome_int].append(table_key)
+        
+        result_type = TableConstants.Types.NUM_CORRECT if gt_result == outcome else TableConstants.Types.NUM_WRONG
+        data_model[result_type][gt_result_int] += 1
+    
 
 
     with open(os.path.join(save_path, TableConstants.Filenames.CONF_MATRIX_IDS), "wb") as file:
@@ -103,14 +107,16 @@ def get_types_from_claims(output_dir: str):
     return results
 
 
-def check_claims_types(gt_answer_path, output_path, save_path):
+def check_claims_types(gt_answer_path, request_path, save_path):
     gt_res = table_utils.read_model_output(gt_answer_path)
-    result = get_types_from_claims(output_path)
-    agg_results = stats.agglomerate_results(gt_res, result)
+    result = get_types_from_claims(request_path)
 
+    table_results = table_utils.agglomerate_results(gt_res, result)
+
+    stats_path = table_utils.convert_stats(request_path)
     return compare_table_types(
-        agg_results, 
-        os.path.join(output_path, Constants.Filenames.STATS), 
+        table_results, 
+        stats_path, 
         save_path, 
         {
             TableConstants.Attributes.TYPES: Constants.Claims.CLAIM_STRUCTURES

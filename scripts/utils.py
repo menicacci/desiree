@@ -174,7 +174,7 @@ def read_html(html_file_path: str):
 
 def read_file(file_path):
     if not os.path.exists(file_path):
-        raise FileNotFoundError()
+        raise FileNotFoundError(file_path)
 
     with open(file_path) as file:
         return file.read()

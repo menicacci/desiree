@@ -7,7 +7,7 @@ from scripts.table import table_types
 from scripts.table.table_constants import TableConstants
 
 
-def convert_stats(request_path: str):
+def convert(request_path: str) -> str:
     stats_file = os.path.join(request_path, Constants.Filenames.STATS)
 
     stats_df = pd.read_excel(stats_file)
@@ -22,6 +22,8 @@ def convert_stats(request_path: str):
     save_path = os.path.join(request_path, TableConstants.Filenames.STATS)
     stats_df.to_excel(save_path, index=True, engine="xlsxwriter")
 
+    return save_path
+
 
 def compare_multiple_results(
         ground_truth_path: str,
@@ -32,7 +34,7 @@ def compare_multiple_results(
 ):
     # Convert request stats file into table stats file
     for request_path in request_paths:
-        convert_stats(request_path)
+        convert(request_path)
 
     # Run comparison
     stats.compare_multiple_results(

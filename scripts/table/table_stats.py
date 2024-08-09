@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from scripts import stats
+from scripts.evaluation import stats
 from scripts.constants import Constants
 from scripts.llm.llm_constants import LlmConstants
 from scripts.table import table_types

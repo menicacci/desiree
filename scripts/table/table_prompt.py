@@ -6,6 +6,7 @@ from scripts.constants import Constants
 from scripts.table import table_utils
 from scripts.table.table_constants import TableConstants
 from scripts.llm import llm_prompt, llm_utils
+from scripts.llm.llm_constants import LlmConstants
 
 
 def build_input_msg(input_msg, table_data, input_structure):
@@ -63,8 +64,8 @@ class TablePrompts:
     def build(self, table_data: dict):
         messages = copy.deepcopy(self.msgs_structure)
 
-        messages[self.input_msg][Constants.MsgStructure.CONTENT] = build_input_msg(
-            messages[self.input_msg][Constants.MsgStructure.CONTENT],
+        messages[self.input_msg][LlmConstants.MsgStructure.CONTENT] = build_input_msg(
+            messages[self.input_msg][LlmConstants.MsgStructure.CONTENT],
             table_data,
             self.input_structure
         )

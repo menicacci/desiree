@@ -1,6 +1,7 @@
 import os
-from scripts import stats, utils
+from scripts import utils
 from scripts.constants import Constants
+from scripts.evaluation import stats
 from scripts.llm.llm_constants import LlmConstants, LlmStructures
 
 
@@ -11,6 +12,9 @@ def get(request_path: str):
     for file_name in os.listdir(stats_dir_path):
         file_path = os.path.join(stats_dir_path, file_name)
         stats_file_content = utils.load_json(file_path)
+
+        if not stats_file_content[LlmConstants.Attributes.REQ_SUCCESSFUL]:
+            continue
 
         stat_to_save = stats_file_content[LlmConstants.Attributes.REQ_INFO]
         stat_to_save.update({

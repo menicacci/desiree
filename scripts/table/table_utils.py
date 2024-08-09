@@ -2,8 +2,9 @@ import json
 import os
 import pandas as pd
 from io import StringIO
-from scripts import utils, stats
+from scripts import utils
 from scripts.constants import Constants
+from scripts.evaluation import stats
 from scripts.llm import llm_utils
 from scripts.table import table_stats
 from scripts.table.table_constants import TableConstants

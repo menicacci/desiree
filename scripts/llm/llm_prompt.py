@@ -17,14 +17,14 @@ def num_tokens_from_string(string: str, model="gpt-4-32k") -> int:
 
 # Returns the approximate number of tokens in a request
 def num_tokens_request_approx(request, model="gpt-4-32k"):
-    return sum([num_tokens_from_string(msg[Constants.MsgStructure.CONTENT]) for msg in request])
+    return sum([num_tokens_from_string(msg[LlmConstants.MsgStructure.CONTENT]) for msg in request])
 
 
 # Returns a message compatible with AzureOpenAI API
 def message(role, content) -> dict:
     return {
-        Constants.MsgStructure.ROLE: role, 
-        Constants.MsgStructure.CONTENT: content
+        LlmConstants.MsgStructure.ROLE: role, 
+        LlmConstants.MsgStructure.CONTENT: content
     }
 
 
@@ -48,7 +48,7 @@ def save(messages_file_paths: dict, save_path: str):
     msgs = get_structure(messages_file_paths)
     
     prompt_structure = "".join([
-        f'        {msg[Constants.MsgStructure.ROLE].upper()}:\n{msg[Constants.MsgStructure.CONTENT]}\n\n\n\n' for msg in msgs
+        f'        {msg[LlmConstants.MsgStructure.ROLE].upper()}:\n{msg[LlmConstants.MsgStructure.CONTENT]}\n\n\n\n' for msg in msgs
     ])
 
     utils.write_file(prompt_structure, os.path.join(save_path, Constants.Filenames.PROMPT))
@@ -67,11 +67,11 @@ def write(messages: list, save_path: str):
     for pos, message in enumerate(messages):
         role_msg_path = os.path.join(
             save_path, 
-            f'{pos}_{message[Constants.MsgStructure.ROLE]}{LlmConstants.Properties.RESPONSE_FILE_FORMAT}'
+            f'{pos}_{message[LlmConstants.MsgStructure.ROLE]}{LlmConstants.Properties.RESPONSE_FILE_FORMAT}'
         )
 
         with open(role_msg_path, "w") as file:
-            file.write(message[Constants.MsgStructure.CONTENT])
+            file.write(message[LlmConstants.MsgStructure.CONTENT])
 
 
 def gen_prompt_dict(request_id: str, prompt: list) -> dict:

@@ -21,7 +21,7 @@ def get_req_directories(request_path):
 
 
 def generate_main_req_directory(request_path: str) -> bool:
-    if not utils.check_path(request_path):
+    if not os.path.exists(request_path):
         generate_req_directories(request_path)    
         return False
     

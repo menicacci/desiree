@@ -1,6 +1,6 @@
 from scripts import claim, utils
 from scripts.table import table_utils
-from scripts.similarity import Similarity
+from scripts.evaluation.similarity import Similarity
 from scripts.constants import Constants
 from scripts.table.table_constants import TableConstants
 import os

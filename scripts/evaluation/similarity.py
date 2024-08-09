@@ -1,4 +1,5 @@
-from scripts import embedding, utils
+from scripts import utils
+from scripts.evaluation import embedding
 
 
 class Similarity:

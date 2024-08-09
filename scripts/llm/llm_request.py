@@ -133,7 +133,7 @@ class ParallelAPIRequester:
     def run(self, request_path: str, prompts: list):
         # Get the directories to save the request data
         (answers_dir, output_dir, stats_dir) = llm_utils.get_req_directories(request_path)
-        
+
         start_time = time.time()
         req_ovr_counter = 0
         req_exc_counter = 0

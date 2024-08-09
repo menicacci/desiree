@@ -53,6 +53,10 @@ docs/_build/
 experiments/
 requests/
 messages/
+single_messages/
 configurations/
+
+send_request.py
+
 
 .ipynb_checkpoints

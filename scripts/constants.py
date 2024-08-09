@@ -75,10 +75,6 @@ class Constants:
             OUTPUT
         )
 
-    class MsgStructure:
-        CONTENT = "content"
-        ROLE = "role"
-
     class Claims:
         RESULT_STRUCTURE = 1
         NOT_RESULT_STRUCTURE = 2

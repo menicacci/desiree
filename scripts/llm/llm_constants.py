@@ -25,6 +25,17 @@ class LlmConstants:
         MESSAGE_FILE_FORMAT = ".txt"
 
 
+    class MsgStructure:
+        CONTENT = "content"
+        ROLE = "role"
+
+    
+    class Roles:
+        ASSISTANT = "assistant"
+        SYSTEM = "system"
+        USER = "user"
+
+
 class LlmStructures:
     LLM_DIRS = (
         Constants.Directories.ANSWERS,

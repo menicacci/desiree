@@ -72,3 +72,8 @@ def get_request_info(request_path: str) -> dict:
         raise FileNotFoundError(request_info_path)
 
     return utils.load_json(request_info_path)
+
+
+def get_key_index(file_name: str):
+    key, idx = file_name.replace(".txt", "").split("_")
+    return key, int(idx)

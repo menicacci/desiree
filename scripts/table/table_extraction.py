@@ -125,8 +125,10 @@ def save_tables_to_json(extracted_tables_map, output_file):
     utils.write_json(filtered_tables_map, output_file)
 
 
-def extract_and_save_tables(articles_directory: str, save_path: str):
-    articles_tables_map = extract_tables_from_directory(articles_directory)
+def extract_and_save_tables(articles_directory: str, save_file_name: str):
+    articles_path = utils.get_abs_path(articles_directory, Constants.DATASET_PATH)
+
+    articles_tables_map = extract_tables_from_directory(articles_path)
 
     num_tables = 0
     for article_id, article_tables in articles_tables_map.items():
@@ -135,10 +137,13 @@ def extract_and_save_tables(articles_directory: str, save_path: str):
         print(f"Article ID: {article_id} - # Tables Found: {num_article_tables}")
     print(f"\nTotal number of tables found: {num_tables}")
 
+    save_path  = utils.get_abs_path(save_file_name, Constants.EXTRACTED_TABLES_PATH)
     save_tables_to_json(articles_tables_map, save_path)
     
 
-def check_extracted_data(tables_file_path: str):
+def check_extracted_data(save_file_name: str):
+    tables_file_path = utils.get_abs_path(save_file_name, Constants.EXTRACTED_TABLES_PATH)
+
     tables_dict = utils.load_json(tables_file_path)
     if tables_dict is None:
         raise FileNotFoundError()

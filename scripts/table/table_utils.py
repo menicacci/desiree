@@ -26,23 +26,41 @@ def get_table_ids(tables_dict: dict) -> list:
     return table_ids
 
 
-def reset_processed_tables(json_file_path: str):
+def set_same_processed_status_tables(json_file_path: str, status: bool):
     data = load_tables_from_json(json_file_path)
     num_tables = 0
 
     for table_id, table_list in data.items():
         for table_data in table_list:
-            table_data[Constants.Attributes.PROCESSED] = False
+            table_data[Constants.Attributes.PROCESSED] = status
             num_tables += 1
 
     utils.write_json(data, json_file_path)
     return num_tables
 
+def reset_all_processed_tables(json_file_path: str):
+    set_same_processed_status_tables(json_file_path, False)
+
+
+def set_all_processed_tables(json_file_path: str):
+    set_same_processed_status_tables(json_file_path, True)
+
+
+def set_tables_to_process(json_file_path: str, to_process: list, set_all=True):
+    if set_all:
+        set_all_processed_tables(json_file_path)
+    
+    data = load_tables_from_json(json_file_path)
+    for article_key, table_idx in to_process:
+        data[article_key][table_idx][Constants.Attributes.PROCESSED] = False
+
+    utils.write_json(data, json_file_path)
+
 
 def check_processed_tables(json_file_path: str, tables_directory_path: str):
     utils.check_path(tables_directory_path)
 
-    tables_to_process = reset_processed_tables(json_file_path)
+    tables_to_process = reset_all_processed_tables(json_file_path)
     data = load_tables_from_json(json_file_path)
 
     for file_name in os.listdir(tables_directory_path):

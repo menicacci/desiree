@@ -9,8 +9,10 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from openai import AzureOpenAI
 from tenacity import retry, stop_after_attempt, wait_fixed, wait_random
 from scripts import utils
+from scripts.constants import Constants
 from scripts.llm.llm_constants import LlmConstants
 from scripts.llm import llm_prompt, llm_utils, llm_stats
+from scripts.table.table_prompt import TablePrompts
 
 # code inspired from: @mahmoudhage21
 
@@ -182,3 +184,35 @@ class ParallelAPIRequester:
             LlmConstants.Attributes.REQ_OVR_COUNT: req_ovr_counter,
             LlmConstants.Attributes.REQ_EXC_COUNT: req_exc_counter
         }
+
+
+class Executor:
+    def __init__(self, 
+                 output_dir: str, 
+                 tables_file_name: str, 
+                 msgs_dir: str,
+                 request_type: str = LlmConstants.PromptTypes.TABLE,
+                 connection_info_path: str = Constants.CONNECTION_INFO_STANDARD, 
+                 request_conf_path: str = Constants.REQUEST_CONF_STANDARD):
+
+        self.output_path = utils.get_abs_path(output_dir, Constants.OUTPUT_PATH, False)
+        self.tables_file_path = utils.get_abs_path(tables_file_name, Constants.EXTRACTED_TABLES_PATH)
+        self.msgs_path = utils.get_abs_path(msgs_dir, Constants.MESSAGES_PATH)
+
+        self.prompts = []
+        self.results = []
+
+        if request_type == LlmConstants.PromptTypes.TABLE:
+            self.prompt_gen = TablePrompts(self.output_path, self.tables_file_path, self.msgs_path)
+        else:
+            raise ValueError("Only TablePrompt supported right now")
+        
+        self.llm = ParallelAPIRequester(connection_info_path, request_conf_path)
+
+
+    def prepare(self, check_processed: bool = False, override: bool = False):
+        self.prompts = self.prompt_gen.generate(check_processed, override)
+
+
+    def execute(self):
+        self.results = self.llm.run(self.output_path, self.prompts)

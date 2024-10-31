@@ -31,7 +31,7 @@ class TablePrompts:
             test_info = {
                 TableConstants.Attributes.MSGS_PATH: messagges_path,
                 TableConstants.Attributes.TABLES_PATH: tables_path,
-                TableConstants.Attributes.NUM_TABLE: table_utils.reset_processed_tables(tables_path)
+                TableConstants.Attributes.NUM_TABLE: table_utils.reset_all_processed_tables(tables_path)
             }
             utils.write_json(
                 test_info,
@@ -73,7 +73,7 @@ class TablePrompts:
         return messages
 
 
-    def generate(self, override=False):
+    def generate(self, check_processed=False, override=False):
         prompts = []
 
         tables = utils.load_json(self.tables_path)
@@ -86,6 +86,9 @@ class TablePrompts:
         for table_id in table_ids:
             article_id, table_idx = table_id.split("_")
             table_data = tables[article_id][int(table_idx)]
+
+            if check_processed and table_data[Constants.Attributes.PROCESSED]:
+                continue
 
             prompts.append(
                 llm_prompt.gen_prompt_dict(

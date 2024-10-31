@@ -222,3 +222,15 @@ def check_not_none_and_type(elems: list, t: type):
             return False
     
     return True
+
+
+def get_abs_path(path: str, base_path: str, raise_error: bool = True):
+    if os.path.isabs(path):
+        return path
+    
+    abs_path = os.path.join(base_path, path)
+    if os.path.exists(abs_path) or not raise_error:
+        return abs_path
+    else:
+        raise ValueError(f"{path} and {abs_path} are not valid paths")
+    

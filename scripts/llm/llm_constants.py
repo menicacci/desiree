@@ -36,6 +36,10 @@ class LlmConstants:
         USER = "user"
 
 
+    class PromptTypes:
+        TABLE = "table"
+
+
 class LlmStructures:
     LLM_DIRS = (
         Constants.Directories.ANSWERS,

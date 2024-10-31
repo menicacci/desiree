@@ -1,7 +1,6 @@
+import os
 
 class Constants:
-
-    PROJECT_PATH = "$GITHUB_HOME/desiree"
 
     class Filenames:
         CLAIMS = "claims.json"
@@ -15,11 +14,11 @@ class Constants:
 
     class Directories:
         API = "API_Config"
-        ARTICLES = "articles"
         COMPARISONS = "comparisons"
         CONFIGURATIONS = "configurations"
+        DATASET = "articles"
         EXPERIMENTS = "experiments"
-        EXTRACTED_TABLE = f"extracted_tables"
+        EXTRACTED_TABLES = f"extracted_tables"
         GROUND_TRUTH = "ground_truth"
         ANSWERS = "answers"
         MESSAGES = "messages"
@@ -65,7 +64,6 @@ class Constants:
         VALUE = "value"
         VALUES = "values"
 
-
     class ColumnHeaders:
         OUTPUT = "output"
         REQUEST_ID = "request_id"
@@ -86,3 +84,17 @@ class Constants:
             WRONG_STRUCTURE
         ]
 
+    GITHUB_HOME = os.environ.get("GITHUB_HOME")
+    PROJECT_PATH = os.path.join(GITHUB_HOME, "desiree")
+    CONFIGURATIONS_PATH = os.path.join(PROJECT_PATH, Directories.CONFIGURATIONS)
+    API_PATH = os.path.join(CONFIGURATIONS_PATH, Directories.API)
+    MESSAGES_PATH = os.path.join(PROJECT_PATH, Directories.MESSAGES)
+    EXPERIMENTS_PATH = os.path.join(PROJECT_PATH, Directories.EXPERIMENTS)
+    COMPARISON_PATH = os.path.join(EXPERIMENTS_PATH, Directories.COMPARISONS)
+    DATASET_PATH = os.path.join(EXPERIMENTS_PATH, Directories.DATASET)
+    EXTRACTED_TABLES_PATH = os.path.join(EXPERIMENTS_PATH, Directories.EXTRACTED_TABLES)
+    GROUND_TRUTH_PATH = os.path.join(EXPERIMENTS_PATH, Directories.GROUND_TRUTH)
+    OUTPUT_PATH = os.path.join(EXPERIMENTS_PATH, Directories.OUTPUT)
+    
+    CONNECTION_INFO_STANDARD = os.path.join(CONFIGURATIONS_PATH, "connection_info.json")
+    REQUEST_CONF_STANDARD = os.path.join(API_PATH, "standard_parallel.json")
